@@ -820,3 +820,86 @@ ${chartCandidatesJson}
 
 请根据大纲与清单输出结构化报告 JSON。`;
 }
+
+// ============ SQL 分析报告（DuckDB：LLM 出 SQL，服务端执行取数） ============
+
+/** SQL 报告系统提示：只输出 JSON，keyMetrics 与 chartQueries 中为可执行的 SELECT */
+export const SQL_REPORT_SYSTEM_PROMPT = `你是资深数据分析师，根据给定的表结构编写只读 SQL，用于报告指标与图表。只输出一个 JSON 对象，不要 markdown 代码块或其它文字。
+
+## 规则
+1. **表名**：仅使用用户消息中给出的表名（如 t1、t2），列名与消息中的完全一致（含空格时用双引号）。
+2. **每条 SQL**：仅一条 SELECT，禁止分号、多语句、INSERT/UPDATE/DELETE。
+3. **keyMetrics**：每条 sql 必须返回恰好一行一列（或一行多列时第一列作为数值），用于展示为「指标名: 数值」；数值可格式化如「123万」「1.2亿」时在 SQL 中用 CAST/ROUND 或保持数字由系统展示。
+4. **chartQueries**：每条 sql 必须返回多行，且包含列 "name"（类别/时间）及至少一列数值；多列数值时作为多系列。id 用于前端占位，如 chart_1、chart_2。
+5. **insights / recommendations**：基于数据写文字结论与建议，不要编造表中没有的字段或数值。
+
+## 输出格式（严格 JSON）
+{
+  "summary": "一句话核心结论（30～60字）",
+  "keyMetrics": [{"label":"指标名","sql":"SELECT ..."}],
+  "insights": ["洞察1","洞察2",...],
+  "recommendations": ["建议1","建议2",...],
+  "chartQueries": [{"id":"chart_1","title":"图表标题","chartType":"bar|line","sql":"SELECT name, 数值列 FROM ..."}]
+}
+keyMetrics 最多 6 条，insights 3～5 条，recommendations 2～4 条，chartQueries 数量与大纲中 chart 章节数一致。`;
+
+/**
+ * 构建 SQL 报告 user prompt：表结构描述 + 大纲 + 可选用户意图
+ */
+export function buildSqlReportPrompt(
+  schemaText: string,
+  outlineJson: string,
+  idea?: string
+): string {
+  const ideaBlock = idea?.trim()
+    ? `**用户意图**：\n${idea.trim()}\n\n`
+    : "";
+  return `${ideaBlock}## 表结构（仅可写以下表与列）
+${schemaText}
+
+## 报告大纲
+${outlineJson}
+
+请根据表结构与大纲输出 JSON，其中 keyMetrics[].sql 与 chartQueries[].sql 为可在上述表上执行的单条 SELECT。`;
+}
+
+// ============ 质量复检：根据质量提示重新生成分析 ============
+
+/** 复检系统提示：根据质量警告修正分析内容，只输出修正后的 JSON */
+export const REFINE_ANALYSIS_SYSTEM_PROMPT = `你是报告质量编辑。你会收到当前的分析内容（summary、keyMetrics、insights、recommendations）以及需要人工复检的质量提示列表。请仅针对这些提示修正内容，其它部分尽量保持原意。
+
+## 修正规则
+1. **引用一致性**：若提示指出某数值未在「仅可引用的统计清单」中，请用清单中的对应数值替换，或删除/改写该句。
+2. **无记录表述**：若提示指出含「降至0」「降幅-100%」「断崖式下跌」「下架」等，请改为「某月后无记录」「部分时段无数据」等表述。
+3. **跨文件洞察**：若提示指出缺少跨文件分析，请在 insights 中至少增加 1 条基于跨文件/多表维度的洞察（如按歌手/厂牌排名、集中度等），并确保数值来自清单。
+4. 未提及的条目不要大改，仅做必要修正。
+
+## 输出格式（严格 JSON，不要 markdown 代码块）
+{
+  "summary": "修正后的一句话核心结论",
+  "keyMetrics": [{"label":"指标名","value":"数值（仅来自清单）","trend":"up|down|stable","changePercent":数字}],
+  "insights": ["修正后的洞察1",...],
+  "recommendations": ["修正后的建议1",...]
+}
+keyMetrics 最多 6 条，insights 3～5 条，recommendations 2～4 条。`;
+
+/**
+ * 构建复检 user prompt：仅可引用的统计清单 + 当前分析 JSON + 质量提示列表
+ */
+export function buildRefineAnalysisPrompt(
+  citationList: string[],
+  currentAnalysisJson: string,
+  qualityWarnings: string[]
+): string {
+  const citationBlock =
+    citationList.length > 0
+      ? `## 【仅可引用的统计清单】\n${citationList.map((l) => `- ${l}`).join("\n")}\n\n`
+      : "";
+  const warningsBlock = qualityWarnings.length > 0
+    ? `## 【需修正的质量提示】\n${qualityWarnings.map((w) => `- ${w}`).join("\n")}\n\n`
+    : "";
+  return `${citationBlock}## 当前分析内容
+${currentAnalysisJson}
+
+${warningsBlock}请根据上述提示输出修正后的分析 JSON（仅 summary、keyMetrics、insights、recommendations）。`;
+}

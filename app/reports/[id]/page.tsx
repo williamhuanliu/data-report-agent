@@ -86,6 +86,51 @@ export default async function ReportPage({
           </div>
         ) : null}
 
+        {report.meta?.sqlQueries &&
+        (report.meta.sqlQueries.keyMetrics?.length > 0 ||
+          report.meta.sqlQueries.charts?.length > 0) ? (
+          <details
+            className="mt-4 print:hidden rounded-lg border border-border bg-surface-elevated overflow-hidden"
+            open
+          >
+            <summary className="px-4 py-3 cursor-pointer font-medium text-foreground hover:bg-surface list-none flex items-center gap-2 [&::-webkit-details-marker]:hidden">
+              查看 SQL
+            </summary>
+            <div className="px-4 pb-4 pt-0 border-t border-border space-y-4">
+              {report.meta.sqlQueries.keyMetrics?.length ? (
+                <div>
+                  <h3 className="text-sm font-medium text-foreground mb-2">指标 SQL</h3>
+                  <ul className="space-y-3">
+                    {report.meta.sqlQueries.keyMetrics.map((m, i) => (
+                      <li key={i}>
+                        <span className="text-sm text-zinc-500 dark:text-zinc-400">{m.label}</span>
+                        <pre className="mt-1 p-3 rounded bg-muted text-foreground text-xs overflow-x-auto font-mono whitespace-pre-wrap break-all">
+                          {m.sql}
+                        </pre>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {report.meta.sqlQueries.charts?.length ? (
+                <div>
+                  <h3 className="text-sm font-medium text-foreground mb-2">图表 SQL</h3>
+                  <ul className="space-y-3">
+                    {report.meta.sqlQueries.charts.map((c) => (
+                      <li key={c.id}>
+                        <span className="text-sm text-zinc-500 dark:text-zinc-400">{c.title}</span>
+                        <pre className="mt-1 p-3 rounded bg-muted text-foreground text-xs overflow-x-auto font-mono whitespace-pre-wrap break-all">
+                          {c.sql}
+                        </pre>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+          </details>
+        ) : null}
+
         {report.contentHtml ? (
           <ReportHtmlContent report={report} contentHtml={report.contentHtml} />
         ) : report.outline?.sections ? (

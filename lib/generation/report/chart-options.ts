@@ -13,15 +13,19 @@ function numericKeys(data: ChartDataItem[]): string[] {
 }
 
 /**
- * 从单个 ChartCandidate 生成 ECharts option（line 或 bar）
+ * 从数据数组 + 图表类型生成 ECharts option（供 SQL 分析路径复用）
  */
-export function buildEChartsOptionFromCandidate(candidate: ChartCandidate): Record<string, unknown> {
-  const { chartType, data } = candidate;
+export function buildEChartsOptionFromData(
+  data: ChartDataItem[],
+  chartType: 'line' | 'bar'
+): Record<string, unknown> {
+  if (data.length === 0) {
+    return { xAxis: { type: 'category', data: [] }, yAxis: { type: 'value' }, series: [] };
+  }
   const names = data.map((d) => String(d.name));
   const keys = numericKeys(data);
-
   if (chartType === 'line') {
-    const series = keys.map((name, i) => ({
+    const series = keys.map((name) => ({
       type: 'line',
       name,
       data: data.map((d) => (typeof d[name] === 'number' ? d[name] : 0)),
@@ -35,8 +39,6 @@ export function buildEChartsOptionFromCandidate(candidate: ChartCandidate): Reco
       series,
     };
   }
-
-  // bar: 竖向对比（category 在 x 轴）
   const series = keys.map((name) => ({
     type: 'bar',
     name,
@@ -47,6 +49,14 @@ export function buildEChartsOptionFromCandidate(candidate: ChartCandidate): Reco
     yAxis: { type: 'value' },
     series,
   };
+}
+
+/**
+ * 从单个 ChartCandidate 生成 ECharts option（line 或 bar）
+ */
+export function buildEChartsOptionFromCandidate(candidate: ChartCandidate): Record<string, unknown> {
+  const { chartType, data } = candidate;
+  return buildEChartsOptionFromData(data, chartType);
 }
 
 /**

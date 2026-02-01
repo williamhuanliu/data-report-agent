@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "test:report": "tsx scripts/test-report-generation.ts"
@@ -13,6 +13,7 @@
     "@anthropic-ai/sdk": "^0.72.1",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-select": "^2.2.6",
+    "duckdb": "^1.4.4",
     "echarts": "^6.0.0",
     "isomorphic-dompurify": "^2.35.0",
     "nanoid": "^5.1.6",

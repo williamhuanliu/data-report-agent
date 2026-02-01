@@ -77,12 +77,22 @@ export interface CreateWizardState {
   title: string;
 }
 
+/** SQL 分析模式下保存的 SQL 列表，供「查看 SQL」展示 */
+export interface ReportMetaSqlQueries {
+  /** 指标对应的 SQL */
+  keyMetrics: { label: string; sql: string }[];
+  /** 图表对应的 SQL */
+  charts: { id: string; title: string; sql: string }[];
+}
+
 /** 报告元数据（用于编辑时数据 grounded） */
 export interface ReportMeta {
   /** 仅可引用的统计清单（10～20 条），编辑时约束 AI 不编造数字 */
   citationList?: string[];
   /** 质量检查警告（如无记录表述等），不阻断生成，供人工复检 */
   qualityWarnings?: string[];
+  /** SQL 分析模式下生成的 SQL，供页面「查看 SQL」 */
+  sqlQueries?: ReportMetaSqlQueries;
 }
 
 /** 服务端根据 selectedChartIds 从 suggestedCharts 生成的 ECharts option，按 id 索引供前端渲染 */

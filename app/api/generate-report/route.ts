@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
           title,
           model,
           fileNames,
+          useSqlAnalysis,
         } = body as {
           mode: CreateMode;
           idea?: string;
@@ -35,6 +36,7 @@ export async function POST(request: NextRequest) {
           title: string;
           model?: string;
           fileNames?: string[];
+          useSqlAnalysis?: boolean;
         };
 
         await runReportGeneration(
@@ -49,6 +51,7 @@ export async function POST(request: NextRequest) {
             title,
             model,
             fileNames,
+            useSqlAnalysis,
           },
           {
             onEvent(ev) {

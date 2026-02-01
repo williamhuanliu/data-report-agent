@@ -29,6 +29,8 @@ export interface ReportRequest {
   title: string;
   model?: string;
   fileNames?: string[];
+  /** import 模式下使用 DuckDB SQL 分析（LLM 出 SQL，服务端执行取数） */
+  useSqlAnalysis?: boolean;
 }
 
 /** SSE 流事件：进度 / 完成 / 错误 */

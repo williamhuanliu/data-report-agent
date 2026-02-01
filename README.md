@@ -19,6 +19,12 @@
 npm install
 ```
 
+若需使用「SQL 分析」模式（导入数据后勾选「使用 SQL 分析（DuckDB）」），需安装可选依赖 DuckDB（含原生二进制，安装可能稍慢）：
+
+```bash
+npm install duckdb
+```
+
 ### 2. 配置环境变量
 
 复制环境变量示例文件：

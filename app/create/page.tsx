@@ -47,6 +47,7 @@ function CreatePageContent() {
   const [outline, setOutline] = useState<ReportOutline | null>(null);
   const [theme, setTheme] = useState("business");
   const [title, setTitle] = useState("");
+  const [useSqlAnalysis, setUseSqlAnalysis] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [generatingSection, setGeneratingSection] = useState<string | null>(
@@ -171,6 +172,8 @@ function CreatePageContent() {
           outline,
           theme,
           title,
+          useSqlAnalysis: mode === "import" ? useSqlAnalysis : undefined,
+          fileNames: mode === "import" && fileName ? [fileName] : undefined,
         }),
       });
 
@@ -302,12 +305,34 @@ function CreatePageContent() {
 
         {/* Step: Outline */}
         {step === "outline" && outline && (
-          <OutlineEditor
-            outline={outline}
-            onOutlineChange={setOutline}
-            onBack={handleBack}
-            onNext={() => goToStep("theme")}
-          />
+          <div className="space-y-6">
+            {mode === "import" && (
+              <div className="rounded-xl border border-border bg-surface-elevated p-4">
+                <label className="flex cursor-pointer items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={useSqlAnalysis}
+                    onChange={(e) => setUseSqlAnalysis(e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                  />
+                  <div>
+                    <span className="font-medium text-foreground">
+                      使用 SQL 分析（DuckDB）
+                    </span>
+                    <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                      由 AI 生成 SQL 在本地执行取数，指标与图表数据更准确，报告页可查看生成的 SQL。
+                    </p>
+                  </div>
+                </label>
+              </div>
+            )}
+            <OutlineEditor
+              outline={outline}
+              onOutlineChange={setOutline}
+              onBack={handleBack}
+              onNext={() => goToStep("theme")}
+            />
+          </div>
         )}
 
         {/* Step: Theme */}

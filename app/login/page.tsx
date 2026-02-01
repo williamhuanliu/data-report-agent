@@ -45,11 +45,11 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--background)]">
+    <div className="min-h-screen flex flex-col bg-background">
       <AppHeader />
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-sm">
-          <h1 className="text-2xl font-semibold text-[var(--foreground)] mb-2 text-center">登录</h1>
+          <h1 className="text-2xl font-semibold text-foreground mb-2 text-center">登录</h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-8 text-center">
             使用邮箱登录（演示：密码为 demo123）
           </p>
@@ -77,7 +77,7 @@ function LoginForm() {
             {message && (
               <p
                 className={`text-sm ${
-                  message.type === 'error' ? 'text-[var(--color-error)]' : 'text-[var(--color-success)]'
+                  message.type === 'error' ? 'text-error' : 'text-success'
                 }`}
               >
                 {message.text}
@@ -88,7 +88,7 @@ function LoginForm() {
             </Button>
           </form>
           <p className="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
-            <Link href="/" className="text-[var(--color-primary)] hover:underline">
+            <Link href="/" className="text-primary hover:underline">
               返回首页
             </Link>
           </p>
@@ -102,7 +102,7 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex flex-col bg-[var(--background)]">
+      <div className="min-h-screen flex flex-col bg-background">
         <AppHeader />
         <main className="flex-1 flex items-center justify-center px-4 py-12">
           <div className="w-full max-w-sm text-center text-zinc-500 dark:text-zinc-400">加载中…</div>

@@ -73,18 +73,18 @@ export function OutlineEditor({ outline, onOutlineChange, onBack, onNext, nextLa
   return (
     <div className="max-w-2xl mx-auto -mt-6">
       <div className="text-center mb-6">
-        <h1 className="text-lg sm:text-xl font-bold text-[var(--foreground)] mb-2">
+        <h1 className="text-lg sm:text-xl font-bold text-foreground mb-2">
           大纲
         </h1>
       </div>
 
       <div className="mb-6">
-        <label className="block text-sm font-medium text-[var(--foreground)] mb-2">报告标题</label>
+        <label className="block text-sm font-medium text-foreground mb-2">报告标题</label>
         <input
           type="text"
           value={outline.title}
           onChange={(e) => onOutlineChange({ ...outline, title: e.target.value })}
-          className="w-full rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
+          className="w-full rounded-lg border border-border bg-surface px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-border-focus"
         />
       </div>
 
@@ -92,10 +92,10 @@ export function OutlineEditor({ outline, onOutlineChange, onBack, onNext, nextLa
         {outline.sections.map((section, index) => (
           <Card
             key={section.id}
-            className={`p-4 rounded-[var(--radius-lg)] border transition-all ${
+            className={`p-4 rounded-lg border transition-all ${
               section.enabled
-                ? 'border-[var(--border)] bg-[var(--surface)]'
-                : 'border-[var(--border)] bg-[var(--surface-elevated)] opacity-60'
+                ? 'border-border bg-surface'
+                : 'border-border bg-surface-elevated opacity-60'
             }`}
           >
             <div className="flex items-center gap-3">
@@ -105,7 +105,7 @@ export function OutlineEditor({ outline, onOutlineChange, onBack, onNext, nextLa
                   type="button"
                   onClick={() => moveSection(index, 'up')}
                   disabled={index === 0}
-                  className="p-1 rounded hover:bg-[var(--border)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  className="p-1 rounded hover:bg-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
@@ -115,7 +115,7 @@ export function OutlineEditor({ outline, onOutlineChange, onBack, onNext, nextLa
                   type="button"
                   onClick={() => moveSection(index, 'down')}
                   disabled={index === outline.sections.length - 1}
-                  className="p-1 rounded hover:bg-[var(--border)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  className="p-1 rounded hover:bg-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -127,7 +127,7 @@ export function OutlineEditor({ outline, onOutlineChange, onBack, onNext, nextLa
               <div
                 className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                   section.enabled
-                    ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]'
+                    ? 'bg-primary/10 text-primary'
                     : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'
                 }`}
               >
@@ -140,7 +140,7 @@ export function OutlineEditor({ outline, onOutlineChange, onBack, onNext, nextLa
                   type="text"
                   value={section.title}
                   onChange={(e) => updateSectionTitle(section.id, e.target.value)}
-                  className="w-full bg-transparent font-medium text-[var(--foreground)] focus:outline-none"
+                  className="w-full bg-transparent font-medium text-foreground focus:outline-none"
                 />
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
                   {section.description}
@@ -152,7 +152,7 @@ export function OutlineEditor({ outline, onOutlineChange, onBack, onNext, nextLa
                 type="button"
                 onClick={() => toggleSection(section.id)}
                 className={`w-10 h-6 rounded-full relative transition-colors ${
-                  section.enabled ? 'bg-[var(--color-primary)]' : 'bg-zinc-300 dark:bg-zinc-600'
+                  section.enabled ? 'bg-primary' : 'bg-zinc-300 dark:bg-zinc-600'
                 }`}
               >
                 <span

@@ -66,12 +66,12 @@ export function FileUploader({ onFileSelect, isLoading }: FileUploaderProps) {
       tabIndex={0}
       aria-label={fileName ? '点击或拖拽以更换文件' : '拖拽文件到这里，或点击上传'}
       className={`
-        relative border-2 border-dashed rounded-[var(--radius-lg)] p-8 sm:p-12
-        transition-all duration-[var(--duration-normal)] cursor-pointer
-        focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-2
+        relative border-2 border-dashed rounded-lg p-8 sm:p-12
+        transition-all duration-normal cursor-pointer
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2
         ${isDragging
-          ? 'border-[var(--color-primary)] bg-gradient-to-br from-[var(--color-gradient-start)]/5 to-[var(--color-gradient-end)]/5 scale-[1.01]'
-          : 'border-[var(--border)] hover:border-zinc-400 dark:hover:border-zinc-500'
+          ? 'border-primary bg-linear-to-br from-gradient-start/5 to-gradient-end/5 scale-[1.01]'
+          : 'border-border hover:border-zinc-400 dark:hover:border-zinc-500'
         }
         ${isLoading ? 'opacity-50 pointer-events-none' : ''}
       `}
@@ -105,7 +105,7 @@ export function FileUploader({ onFileSelect, isLoading }: FileUploaderProps) {
 
         {fileName ? (
           <>
-            <p className="text-base sm:text-lg font-medium text-[var(--foreground)]">
+            <p className="text-base sm:text-lg font-medium text-foreground">
               {fileName}
             </p>
             <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
@@ -114,7 +114,7 @@ export function FileUploader({ onFileSelect, isLoading }: FileUploaderProps) {
           </>
         ) : (
           <>
-            <p className="text-base sm:text-lg font-medium text-[var(--foreground)]">
+            <p className="text-base sm:text-lg font-medium text-foreground">
               拖拽文件到这里，或点击上传
             </p>
             <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">

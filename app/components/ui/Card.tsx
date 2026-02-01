@@ -13,8 +13,8 @@ export function Card({
   return (
     <div
       className={`
-        rounded-[var(--radius-lg)] border border-[var(--border)]
-        bg-[var(--surface)]
+        rounded-lg border border-border
+        bg-surface
         ${variant === 'elevated' ? 'shadow-sm' : ''}
         ${className}
       `}
@@ -39,7 +39,7 @@ export function CardHeader({
   return (
     <div className={`px-5 pt-5 pb-2 ${className}`}>
       {title && (
-        <h3 className="text-base font-semibold text-[var(--foreground)]">
+        <h3 className="text-base font-semibold text-foreground">
           {title}
         </h3>
       )}

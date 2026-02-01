@@ -1,11 +1,16 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Dialog } from '@/app/components/ui/Dialog';
-import { Button } from '@/app/components/ui/Button';
-import { getFriendlyErrorMessage } from '@/lib/error-messages';
+import { useState } from "react";
+import { Dialog } from "@/app/components/ui/Dialog";
+import { Button } from "@/app/components/ui/Button";
+import { getFriendlyErrorMessage } from "@/lib/error-messages";
 
-type SectionType = 'summary' | 'metrics' | 'insights' | 'recommendations' | 'chart';
+type SectionType =
+  | "summary"
+  | "metrics"
+  | "insights"
+  | "recommendations"
+  | "chart";
 
 interface SectionEditDialogProps {
   open: boolean;
@@ -17,18 +22,22 @@ interface SectionEditDialogProps {
 }
 
 const SECTION_LABELS: Record<SectionType, string> = {
-  summary: '摘要',
-  metrics: '关键指标',
-  insights: '核心洞察',
-  recommendations: '行动建议',
-  chart: '图表数据',
+  summary: "摘要",
+  metrics: "关键指标",
+  insights: "核心洞察",
+  recommendations: "行动建议",
+  chart: "图表数据",
 };
 
 const QUICK_ACTIONS = [
-  { id: 'rewrite', label: '重新生成', description: '用不同的表述重写这部分内容' },
-  { id: 'expand', label: '扩展内容', description: '增加更多细节和深度' },
-  { id: 'simplify', label: '精简内容', description: '删减冗余，保留核心要点' },
-  { id: 'formal', label: '更正式', description: '调整为更正式的商务语气' },
+  {
+    id: "rewrite",
+    label: "重新生成",
+    description: "用不同的表述重写这部分内容",
+  },
+  { id: "expand", label: "扩展内容", description: "增加更多细节和深度" },
+  { id: "simplify", label: "精简内容", description: "删减冗余，保留核心要点" },
+  { id: "formal", label: "更正式", description: "调整为更正式的商务语气" },
 ];
 
 export function SectionEditDialog({
@@ -40,14 +49,14 @@ export function SectionEditDialog({
   onUpdate,
 }: SectionEditDialogProps) {
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
-  const [customInstruction, setCustomInstruction] = useState('');
+  const [customInstruction, setCustomInstruction] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     const instruction = selectedAction || customInstruction.trim();
     if (!instruction) {
-      setError('请选择一个操作或输入自定义指令');
+      setError("请选择一个操作或输入自定义指令");
       return;
     }
 
@@ -55,9 +64,9 @@ export function SectionEditDialog({
     setError(null);
 
     try {
-      const res = await fetch('/api/edit-section', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/edit-section", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           reportId,
           sectionType,
@@ -68,7 +77,7 @@ export function SectionEditDialog({
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || '编辑失败');
+        throw new Error(data.error || "编辑失败");
       }
 
       const data = await res.json();
@@ -81,11 +90,15 @@ export function SectionEditDialog({
   };
 
   const renderContentPreview = () => {
-    if (sectionType === 'summary') {
-      return <p className="text-sm text-zinc-600 dark:text-zinc-400">{currentContent as string}</p>;
+    if (sectionType === "summary") {
+      return (
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          {currentContent as string}
+        </p>
+      );
     }
 
-    if (sectionType === 'insights' || sectionType === 'recommendations') {
+    if (sectionType === "insights" || sectionType === "recommendations") {
       const items = currentContent as string[];
       return (
         <ul className="text-sm text-zinc-600 dark:text-zinc-400 space-y-1 list-disc list-inside">
@@ -96,12 +109,20 @@ export function SectionEditDialog({
       );
     }
 
-    if (sectionType === 'metrics') {
-      return <p className="text-sm text-zinc-500">{(currentContent as unknown[]).length} 个指标</p>;
+    if (sectionType === "metrics") {
+      return (
+        <p className="text-sm text-zinc-500">
+          {(currentContent as unknown[]).length} 个指标
+        </p>
+      );
     }
 
-    if (sectionType === 'chart') {
-      return <p className="text-sm text-zinc-500">{((currentContent as unknown[]) || []).length} 个数据点</p>;
+    if (sectionType === "chart") {
+      return (
+        <p className="text-sm text-zinc-500">
+          {((currentContent as unknown[]) || []).length} 个数据点
+        </p>
+      );
     }
 
     return null;
@@ -117,15 +138,19 @@ export function SectionEditDialog({
       <div className="space-y-6">
         {/* Current content preview */}
         <div>
-          <label className="block text-sm font-medium text-[var(--foreground)] mb-2">当前内容</label>
-          <div className="p-3 rounded-lg bg-[var(--surface-elevated)] max-h-32 overflow-y-auto">
+          <label className="block text-sm font-medium text-foreground mb-2">
+            当前内容
+          </label>
+          <div className="p-3 rounded-lg bg-surface-elevated max-h-32 overflow-y-auto">
             {renderContentPreview()}
           </div>
         </div>
 
         {/* Quick actions */}
         <div>
-          <label className="block text-sm font-medium text-[var(--foreground)] mb-2">快捷操作</label>
+          <label className="block text-sm font-medium text-foreground mb-2">
+            快捷操作
+          </label>
           <div className="grid grid-cols-2 gap-2">
             {QUICK_ACTIONS.map((action) => (
               <button
@@ -133,16 +158,20 @@ export function SectionEditDialog({
                 type="button"
                 onClick={() => {
                   setSelectedAction(action.id);
-                  setCustomInstruction('');
+                  setCustomInstruction("");
                 }}
                 className={`p-3 rounded-lg border text-left transition-colors ${
                   selectedAction === action.id
-                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5'
-                    : 'border-[var(--border)] hover:border-[var(--color-primary)]/50'
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/50"
                 }`}
               >
-                <p className="font-medium text-sm text-[var(--foreground)]">{action.label}</p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">{action.description}</p>
+                <p className="font-medium text-sm text-foreground">
+                  {action.label}
+                </p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  {action.description}
+                </p>
               </button>
             ))}
           </div>
@@ -150,7 +179,7 @@ export function SectionEditDialog({
 
         {/* Custom instruction */}
         <div>
-          <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             或输入自定义指令
           </label>
           <textarea
@@ -161,14 +190,12 @@ export function SectionEditDialog({
             }}
             placeholder="例如：添加关于市场趋势的分析"
             rows={3}
-            className="w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--foreground)] placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] resize-none"
+            className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-border-focus resize-none"
           />
         </div>
 
         {/* Error */}
-        {error && (
-          <p className="text-sm text-[var(--color-error)]">{error}</p>
-        )}
+        {error && <p className="text-sm text-error">{error}</p>}
 
         {/* Actions */}
         <div className="flex items-center gap-3 pt-2">

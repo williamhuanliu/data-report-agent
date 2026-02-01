@@ -31,7 +31,7 @@ export function CreateModeImport({
   return (
     <div className="max-w-3xl mx-auto">
       <div className="text-center mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] mb-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
           导入数据文件
         </h1>
         <p className="text-zinc-500 dark:text-zinc-400">
@@ -41,20 +41,20 @@ export function CreateModeImport({
 
       <div className="space-y-6">
         {!parsedData ? (
-          <Card className="overflow-hidden rounded-[var(--radius-xl)] border-2 border-dashed border-[var(--border)] hover:border-[var(--color-primary)]/40 transition-colors">
+          <Card className="overflow-hidden rounded-xl border-2 border-dashed border-border hover:border-primary/40 transition-colors">
             <FileUploader onFileSelect={onFileSelect} isLoading={isLoading} />
           </Card>
         ) : (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-[var(--color-success)]/10 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-[var(--color-success)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
                 <div>
-                  <p className="font-medium text-[var(--foreground)]">{fileName}</p>
+                  <p className="font-medium text-foreground">{fileName}</p>
                   <p className="text-sm text-zinc-500 dark:text-zinc-400">
                     {parsedData.rows.length} 行 · {parsedData.headers.length} 列
                   </p>
@@ -72,7 +72,7 @@ export function CreateModeImport({
               </Button>
             </div>
 
-            <div className="rounded-[var(--radius-lg)] border border-[var(--border)] overflow-hidden bg-[var(--surface)]">
+            <div className="rounded-lg border border-border overflow-hidden bg-surface">
               <DataPreview data={parsedData} />
             </div>
           </div>

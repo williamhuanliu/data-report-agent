@@ -26,14 +26,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={`
-            w-full h-11 px-4 rounded-[var(--radius-md)] border bg-[var(--surface)]
-            text-[var(--foreground)] placeholder:text-zinc-400 dark:placeholder:text-zinc-500
-            transition-colors duration-[var(--duration-fast)]
-            focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-950
+            w-full h-11 px-4 rounded-md border bg-surface
+            text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-500
+            transition-colors duration-fast
+            focus:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-950
             disabled:opacity-50 disabled:cursor-not-allowed
             ${error
-              ? 'border-[var(--color-error)] focus-visible:ring-[var(--color-error)]'
-              : 'border-[var(--border)]'}
+              ? 'border-error focus-visible:ring-error'
+              : 'border-border'}
             ${className}
           `}
           aria-invalid={error}
@@ -43,7 +43,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {hint && (
           <p
             id={`${inputId}-hint`}
-            className={`mt-1.5 text-sm ${error ? 'text-[var(--color-error)]' : 'text-zinc-500 dark:text-zinc-400'}`}
+            className={`mt-1.5 text-sm ${error ? 'text-error' : 'text-zinc-500 dark:text-zinc-400'}`}
           >
             {hint}
           </p>

@@ -31,9 +31,9 @@ export function StepIndicator({ currentStep, mode }: StepIndicatorProps) {
                 <div
                   className={`
                     w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors
-                    ${isActive ? 'bg-[var(--color-primary)] text-white' : ''}
-                    ${isCompleted ? 'bg-[var(--color-success)] text-white' : ''}
-                    ${isDisabled ? 'bg-[var(--border)] text-zinc-400' : ''}
+                    ${isActive ? 'bg-primary text-white' : ''}
+                    ${isCompleted ? 'bg-success text-white' : ''}
+                    ${isDisabled ? 'bg-border text-zinc-400' : ''}
                   `}
                 >
                   {isCompleted ? (
@@ -47,7 +47,7 @@ export function StepIndicator({ currentStep, mode }: StepIndicatorProps) {
                 <span
                   className={`
                     mt-1.5 text-xs font-medium hidden sm:block
-                    ${isActive ? 'text-[var(--foreground)]' : 'text-zinc-400'}
+                    ${isActive ? 'text-foreground' : 'text-zinc-400'}
                   `}
                 >
                   {step.label}
@@ -57,7 +57,7 @@ export function StepIndicator({ currentStep, mode }: StepIndicatorProps) {
                 <div
                   className={`
                     w-8 sm:w-16 h-0.5 mx-2 transition-colors
-                    ${index < currentIndex ? 'bg-[var(--color-success)]' : 'bg-[var(--border)]'}
+                    ${index < currentIndex ? 'bg-success' : 'bg-border'}
                   `}
                 />
               )}

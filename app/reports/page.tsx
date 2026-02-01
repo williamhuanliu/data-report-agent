@@ -56,11 +56,11 @@ export default function ReportsListPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--background)]">
+    <div className="min-h-screen flex flex-col bg-background">
       <AppHeader />
       <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-8 py-8 sm:py-12">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <h1 className="text-2xl font-semibold text-[var(--foreground)]">我的报告</h1>
+          <h1 className="text-2xl font-semibold text-foreground">我的报告</h1>
           <Link href="/create">
             <Button>新建报告</Button>
           </Link>
@@ -71,13 +71,13 @@ export default function ReportsListPage() {
             <div className="text-zinc-500 dark:text-zinc-400">加载中…</div>
           </div>
         ) : reports.length === 0 ? (
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] p-12 text-center">
+          <div className="rounded-2xl border border-border bg-surface-elevated p-12 text-center">
             <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 dark:text-zinc-500">
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <p className="text-[var(--foreground)] font-medium mb-1">暂无报告</p>
+            <p className="text-foreground font-medium mb-1">暂无报告</p>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">生成的数据报告会出现在这里</p>
             <Link href="/create">
               <Button>去创建第一份报告</Button>
@@ -88,13 +88,13 @@ export default function ReportsListPage() {
             {reports.map((report) => (
               <li
                 key={report.id}
-                className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--color-primary)]/30 transition-colors"
+                className="rounded-lg border border-border bg-surface hover:border-primary/30 transition-colors"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 sm:px-5">
                   <div className="flex-1 min-w-0">
                     <Link
                       href={`/reports/${report.id}?manage=1`}
-                      className="block font-medium text-[var(--foreground)] hover:text-[var(--color-primary)] truncate focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-2 rounded"
+                      className="block font-medium text-foreground hover:text-primary truncate focus:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2 rounded"
                     >
                       {report.title}
                     </Link>
@@ -105,13 +105,13 @@ export default function ReportsListPage() {
                   <div className="flex items-center gap-2 shrink-0">
                     <Link
                       href={`/reports/${report.id}?manage=1`}
-                      className="inline-flex h-9 items-center justify-center rounded-lg px-3 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-[var(--foreground)] hover:bg-[var(--surface-elevated)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-2"
+                      className="inline-flex h-9 items-center justify-center rounded-lg px-3 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-foreground hover:bg-surface-elevated transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2"
                     >
                       查看
                     </Link>
                     <Link
                       href={`/reports/${report.id}/edit`}
-                      className="inline-flex h-9 items-center justify-center rounded-lg px-3 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-[var(--foreground)] hover:bg-[var(--surface-elevated)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-2"
+                      className="inline-flex h-9 items-center justify-center rounded-lg px-3 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-foreground hover:bg-surface-elevated transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2"
                     >
                       编辑
                     </Link>
@@ -119,7 +119,7 @@ export default function ReportsListPage() {
                       type="button"
                       onClick={() => handleDelete(report.id, report.title)}
                       disabled={deletingId === report.id}
-                      className="inline-flex h-9 items-center justify-center rounded-lg px-3 text-sm font-medium text-[var(--color-error)] hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-2"
+                      className="inline-flex h-9 items-center justify-center rounded-lg px-3 text-sm font-medium text-error hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2"
                     >
                       {deletingId === report.id ? '删除中…' : '删除'}
                     </button>

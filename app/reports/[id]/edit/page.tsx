@@ -121,9 +121,9 @@ export default function ReportEditPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-zinc-500">加载中...</p>
         </div>
       </div>
@@ -132,10 +132,10 @@ export default function ReportEditPage() {
 
   if (!report) {
     return (
-      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <p className="text-zinc-500 mb-4">报告不存在</p>
-          <Link href="/" className="text-[var(--color-primary)] hover:underline">
+          <Link href="/" className="text-primary hover:underline">
             返回首页
           </Link>
         </div>
@@ -144,9 +144,9 @@ export default function ReportEditPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <nav className="sticky top-0 z-10 bg-[var(--surface)]/95 backdrop-blur-md border-b border-[var(--border)]">
+      <nav className="sticky top-0 z-10 bg-surface/95 backdrop-blur-md border-b border-border">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
@@ -158,7 +158,7 @@ export default function ReportEditPage() {
               </svg>
               <span className="hidden sm:inline">返回报告</span>
             </Link>
-            <h1 className="text-lg font-semibold text-[var(--foreground)] truncate max-w-[200px] sm:max-w-none">
+            <h1 className="text-lg font-semibold text-foreground truncate max-w-[200px] sm:max-w-none">
               编辑：{report.title}
             </h1>
           </div>
@@ -199,11 +199,11 @@ export default function ReportEditPage() {
           {getSections().map((section) => (
             <Card
               key={section.type}
-              className="p-4 sm:p-6 rounded-[var(--radius-lg)] border border-[var(--border)] hover:border-[var(--color-primary)]/30 transition-colors"
+              className="p-4 sm:p-6 rounded-lg border border-border hover:border-primary/30 transition-colors"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-[var(--foreground)] mb-2">{section.title}</h3>
+                  <h3 className="font-semibold text-foreground mb-2">{section.title}</h3>
                   <div className="text-sm text-zinc-600 dark:text-zinc-400">
                     {section.type === 'summary' && (
                       <p>{section.content as string}</p>
@@ -240,7 +240,7 @@ export default function ReportEditPage() {
                 <button
                   type="button"
                   onClick={() => setEditingSection(section.type)}
-                  className="shrink-0 w-10 h-10 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 transition-colors flex items-center justify-center"
+                  className="shrink-0 w-10 h-10 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex items-center justify-center"
                   title="AI 编辑"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

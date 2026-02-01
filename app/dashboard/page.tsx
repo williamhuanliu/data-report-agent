@@ -391,8 +391,18 @@ export default function DashboardPage() {
               className="w-12 h-12 flex items-center justify-center rounded-full text-[#444746] dark:text-[#c4c7c5] hover:bg-[#dde3ea] dark:hover:bg-[#37393b] transition-colors"
               aria-label="收起侧边栏"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
             </button>
           </div>
@@ -404,8 +414,18 @@ export default function DashboardPage() {
               onClick={resetCreate}
               className="inline-flex items-center gap-3 h-12 pl-4 pr-6 rounded-full bg-[#dde3ea] dark:bg-[#37393b] text-[#1f1f1f] dark:text-[#e3e3e3] text-sm font-medium hover:bg-[#c8d3de] dark:hover:bg-[#484a4d] hover:shadow-md transition-all"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 4.5v15m7.5-7.5h-15"
+                />
               </svg>
               新建报告
             </button>
@@ -414,8 +434,18 @@ export default function DashboardPage() {
           {/* 搜索 */}
           <div className="px-3 pb-4">
             <div className="relative">
-              <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#5f6368] dark:text-[#9aa0a6]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              <svg
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#5f6368] dark:text-[#9aa0a6]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                />
               </svg>
               <input
                 type="text"
@@ -457,7 +487,9 @@ export default function DashboardPage() {
                           href={`/reports/${report.id}?manage=1`}
                           className="flex items-center gap-3 px-4 py-3 rounded-full text-[#1f1f1f] dark:text-[#e3e3e3] hover:bg-[#dde3ea] dark:hover:bg-[#37393b] transition-colors"
                         >
-                          <span className="truncate text-sm">{report.title}</span>
+                          <span className="truncate text-sm">
+                            {report.title}
+                          </span>
                         </Link>
                         {sidebarHoverId === report.id && (
                           <button
@@ -465,11 +497,17 @@ export default function DashboardPage() {
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                              setCardMenuId(cardMenuId === report.id ? null : report.id);
+                              setCardMenuId(
+                                cardMenuId === report.id ? null : report.id
+                              );
                             }}
                             className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full text-[#5f6368] dark:text-[#9aa0a6] hover:bg-[#c8d3de] dark:hover:bg-[#484a4d] transition-colors"
                           >
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <svg
+                              className="w-5 h-5"
+                              fill="currentColor"
+                              viewBox="0 0 24 24"
+                            >
                               <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
                             </svg>
                           </button>
@@ -483,7 +521,11 @@ export default function DashboardPage() {
                               href={`/reports/${report.id}?manage=1`}
                               className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#1f1f1f] dark:text-[#e3e3e3] hover:bg-[#f0f4f9] dark:hover:bg-[#37393b]"
                             >
-                              <svg className="w-5 h-5 text-[#5f6368] dark:text-[#9aa0a6]" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                              <svg
+                                className="w-5 h-5 text-[#5f6368] dark:text-[#9aa0a6]"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
                                 strokeWidth={1.5}
                               >
                                 <path
@@ -559,19 +601,39 @@ export default function DashboardPage() {
               onClick={() => setSettingsOpen(!settingsOpen)}
               className="flex items-center gap-3 w-full px-4 py-3 rounded-full text-[#1f1f1f] dark:text-[#e3e3e3] hover:bg-[#dde3ea] dark:hover:bg-[#37393b] transition-colors text-left"
             >
-              <svg className="w-5 h-5 text-[#5f6368] dark:text-[#9aa0a6] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.28z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <svg
+                className="w-5 h-5 text-[#5f6368] dark:text-[#9aa0a6] shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.28z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
               </svg>
               <span className="text-sm">设置</span>
             </button>
             {settingsOpen && (
               <div className="absolute bottom-full left-2 right-2 mb-1 py-2 rounded-xl bg-white dark:bg-[#2d2f31] shadow-lg ring-1 ring-black/5 dark:ring-white/10 z-50 min-w-[160px]">
-                <div className="px-3 py-1.5 text-xs font-medium text-[#5f6368] dark:text-[#9aa0a6]">主题</div>
+                <div className="px-3 py-1.5 text-xs font-medium text-[#5f6368] dark:text-[#9aa0a6]">
+                  主题
+                </div>
                 {[
                   { value: "light" as const, label: "浅色模式", icon: "sun" },
                   { value: "dark" as const, label: "深色模式", icon: "moon" },
-                  { value: "system" as const, label: "跟随系统", icon: "monitor" },
+                  {
+                    value: "system" as const,
+                    label: "跟随系统",
+                    icon: "monitor",
+                  },
                 ].map((opt) => (
                   <button
                     key={opt.value}
@@ -583,17 +645,63 @@ export default function DashboardPage() {
                     className="flex items-center gap-3 w-full px-3 py-2.5 text-sm text-[#1f1f1f] dark:text-[#e3e3e3] hover:bg-[#f0f4f9] dark:hover:bg-[#37393b] transition-colors"
                   >
                     {opt.icon === "sun" && (
-                      <svg className="w-4 h-4 text-[#5f6368] dark:text-[#9aa0a6]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                      <svg
+                        className="w-4 h-4 text-[#5f6368] dark:text-[#9aa0a6]"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                        />
+                      </svg>
                     )}
                     {opt.icon === "moon" && (
-                      <svg className="w-4 h-4 text-[#5f6368] dark:text-[#9aa0a6]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                      <svg
+                        className="w-4 h-4 text-[#5f6368] dark:text-[#9aa0a6]"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                        />
+                      </svg>
                     )}
                     {opt.icon === "monitor" && (
-                      <svg className="w-4 h-4 text-[#5f6368] dark:text-[#9aa0a6]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                      <svg
+                        className="w-4 h-4 text-[#5f6368] dark:text-[#9aa0a6]"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                        />
+                      </svg>
                     )}
                     <span>{opt.label}</span>
                     {appTheme === opt.value && (
-                      <svg className="w-4 h-4 ml-auto text-[#1a73e8]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                      <svg
+                        className="w-4 h-4 ml-auto text-[#1a73e8]"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                     )}
                   </button>
                 ))}
@@ -615,8 +723,18 @@ export default function DashboardPage() {
                 className="w-12 h-12 flex items-center justify-center rounded-full text-[#444746] dark:text-[#c4c7c5] hover:bg-[#dde3ea] dark:hover:bg-[#37393b] transition-colors shrink-0"
                 aria-label="展开侧边栏"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 </svg>
               </button>
             )}
@@ -626,8 +744,18 @@ export default function DashboardPage() {
                 onClick={resetCreate}
                 className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-[#dde3ea] dark:bg-[#37393b] text-[#1f1f1f] dark:text-[#e3e3e3] hover:bg-[#c8d3de] dark:hover:bg-[#484a4d] transition-colors shrink-0"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M12 4v16m8-8H4"
+                  />
                 </svg>
                 <span className="text-sm font-medium">新建</span>
               </button>
@@ -667,8 +795,18 @@ export default function DashboardPage() {
                       onClick={() => signOut({ callbackUrl: "/" })}
                       className="w-full flex items-center justify-center gap-2 px-5 py-3 text-sm text-[#1f1f1f] dark:text-[#e3e3e3] hover:bg-[#f0f4f9] dark:hover:bg-[#37393b] rounded-lg mx-2 transition-colors"
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                        />
                       </svg>
                       退出登录
                     </button>
@@ -682,140 +820,177 @@ export default function DashboardPage() {
         {/* 创建向导区域 */}
         <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
           <div className="flex-1 min-h-0 overflow-auto">
-          <div className="max-w-3xl mx-auto px-6 py-8">
-            {/* Error alert */}
-            {error && (
-              <div className="mb-6">
-                <Alert
-                  variant="error"
-                  description={error}
-                  onDismiss={() => setError(null)}
-                />
-              </div>
-            )}
-
-            {/* 创建页：极简 Gemini 风格 */}
-            {step === "mode" && (
-              <div className="flex flex-col items-center justify-center min-h-[60vh] px-6">
-                {/* 居中标题 */}
-                <div className="text-center mb-10">
-                  <h2 className="text-4xl sm:text-5xl font-light text-[#1f1f1f] dark:text-[#e3e3e3] mb-3">
-                    有什么可以帮你？
-                  </h2>
-                </div>
-
-                {/* 主输入区域 - 类似 Gemini 的输入框 */}
-                <div className="w-full max-w-2xl">
-                  <div className="rounded-3xl bg-white dark:bg-[#1e1f20] shadow-sm border border-[#dfe1e5] dark:border-[#3c4043] overflow-hidden">
-                    {/* 文件上传/显示区 */}
-                    {parsedData ? (
-                      <div className="px-5 py-4 border-b border-[#f1f3f4] dark:border-[#3c4043] flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-[#e6f4ea] dark:bg-[#1e3a29] flex items-center justify-center">
-                          <svg className="w-5 h-5 text-[#34a853]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-[#1f1f1f] dark:text-[#e3e3e3] truncate">{fileName}</p>
-                          <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6]">{parsedData.rows.length} 行数据</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => { setParsedData(null); setFileName(""); }}
-                          className="text-xs text-[#5f6368] hover:text-[#1f1f1f] dark:hover:text-[#e3e3e3]"
-                        >
-                          移除
-                        </button>
-                      </div>
-                    ) : null}
-                    
-                    {/* 输入框 */}
-                    <textarea
-                      value={idea}
-                      onChange={(e) => setIdea(e.target.value)}
-                      placeholder="描述你想生成的报告..."
-                      rows={3}
-                      className="w-full px-5 py-4 bg-transparent text-base text-[#1f1f1f] dark:text-[#e3e3e3] placeholder:text-[#9aa0a6] focus:outline-none resize-none"
-                    />
-                    
-                    {/* 底部操作栏 */}
-                    <div className="px-4 py-3 flex items-center justify-between border-t border-[#f1f3f4] dark:border-[#3c4043]">
-                      <div className="flex items-center gap-1">
-                        {/* 上传按钮 */}
-                        <label className="relative w-10 h-10 rounded-full flex items-center justify-center text-[#5f6368] dark:text-[#9aa0a6] hover:bg-[#f1f3f4] dark:hover:bg-[#37393b] cursor-pointer transition-colors">
-                          <input
-                            type="file"
-                            accept=".xlsx,.xls,.csv"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleFileSelect(file);
-                              e.target.value = "";
-                            }}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          />
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13" />
-                          </svg>
-                        </label>
-                      </div>
-                      
-                      {/* 发送按钮 */}
-                      <button
-                        type="button"
-                        onClick={handleStartFromCreatePage}
-                        disabled={!parsedData || isLoading}
-                        className="w-10 h-10 rounded-full flex items-center justify-center bg-[#1f1f1f] dark:bg-[#e3e3e3] text-white dark:text-[#1f1f1f] disabled:bg-[#e8eaed] dark:disabled:bg-[#3c4043] disabled:text-[#9aa0a6] disabled:cursor-not-allowed transition-colors"
-                      >
-                        {isLoading ? (
-                          <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                          </svg>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {/* 提示文案 */}
-                  <p className="text-center text-xs text-[#9aa0a6] mt-4">
-                    上传 Excel 或 CSV 文件，AI 将自动分析并生成报告
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Step: Outline */}
-            {step === "outline" && outline && (
-              <>
-                <OutlineEditor
-                  outline={outline}
-                  onOutlineChange={setOutline}
-                  onBack={handleBack}
-                  onNext={handleGenerateReport}
-                  nextLabel="生成报告"
-                  isLoading={isLoading}
-                  hideActions
-                />
-                <div className="mt-10">
-                  <ThemeSelector
-                    selectedTheme={theme}
-                    onThemeChange={setTheme}
-                    inline
+            <div className="max-w-3xl mx-auto px-6 py-8">
+              {/* Error alert */}
+              {error && (
+                <div className="mb-6">
+                  <Alert
+                    variant="error"
+                    description={error}
+                    onDismiss={() => setError(null)}
                   />
                 </div>
-              </>
-            )}
+              )}
 
-            {/* Step: Generating */}
-            {step === "generating" && (
-              <GenerationProgress
-                progress={generationProgress}
-                currentSection={generatingSection}
-                outline={outline}
-              />
-            )}
-          </div>
+              {/* 创建页：极简 Gemini 风格 */}
+              {step === "mode" && (
+                <div className="flex flex-col items-center justify-center min-h-[60vh] px-6">
+                  {/* 居中标题 */}
+                  <div className="text-center mb-10">
+                    <h2 className="text-4xl sm:text-5xl font-light text-[#1f1f1f] dark:text-[#e3e3e3] mb-3">
+                      有什么可以帮你？
+                    </h2>
+                  </div>
+
+                  {/* 主输入区域 - 类似 Gemini 的输入框 */}
+                  <div className="w-full max-w-2xl">
+                    <div className="rounded-3xl bg-white dark:bg-[#1e1f20] shadow-sm border border-[#dfe1e5] dark:border-[#3c4043] overflow-hidden">
+                      {/* 文件上传/显示区 */}
+                      {parsedData ? (
+                        <div className="px-5 py-4 border-b border-[#f1f3f4] dark:border-[#3c4043] flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-[#e6f4ea] dark:bg-[#1e3a29] flex items-center justify-center">
+                            <svg
+                              className="w-5 h-5 text-[#34a853]"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              strokeWidth={2}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                              />
+                            </svg>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-[#1f1f1f] dark:text-[#e3e3e3] truncate">
+                              {fileName}
+                            </p>
+                            <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6]">
+                              {parsedData.rows.length} 行数据
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setParsedData(null);
+                              setFileName("");
+                            }}
+                            className="text-xs text-[#5f6368] hover:text-[#1f1f1f] dark:hover:text-[#e3e3e3]"
+                          >
+                            移除
+                          </button>
+                        </div>
+                      ) : null}
+
+                      {/* 输入框 */}
+                      <textarea
+                        value={idea}
+                        onChange={(e) => setIdea(e.target.value)}
+                        placeholder="描述你想生成的报告..."
+                        rows={3}
+                        className="w-full px-5 py-4 bg-transparent text-base text-[#1f1f1f] dark:text-[#e3e3e3] placeholder:text-[#9aa0a6] focus:outline-none resize-none"
+                      />
+
+                      {/* 底部操作栏 */}
+                      <div className="px-4 py-3 flex items-center justify-between border-t border-[#f1f3f4] dark:border-[#3c4043]">
+                        <div className="flex items-center gap-1">
+                          {/* 上传按钮 */}
+                          <label className="relative w-10 h-10 rounded-full flex items-center justify-center text-[#5f6368] dark:text-[#9aa0a6] hover:bg-[#f1f3f4] dark:hover:bg-[#37393b] cursor-pointer transition-colors">
+                            <input
+                              type="file"
+                              accept=".xlsx,.xls,.csv"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleFileSelect(file);
+                                e.target.value = "";
+                              }}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.5}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13"
+                              />
+                            </svg>
+                          </label>
+                        </div>
+
+                        {/* 发送按钮 */}
+                        <button
+                          type="button"
+                          onClick={handleStartFromCreatePage}
+                          disabled={!parsedData || isLoading}
+                          className="w-10 h-10 rounded-full flex items-center justify-center bg-[#1f1f1f] dark:bg-[#e3e3e3] text-white dark:text-[#1f1f1f] disabled:bg-[#e8eaed] dark:disabled:bg-[#3c4043] disabled:text-[#9aa0a6] disabled:cursor-not-allowed transition-colors"
+                        >
+                          {isLoading ? (
+                            <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              strokeWidth={2}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
+                              />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* 提示文案 */}
+                    <p className="text-center text-xs text-[#9aa0a6] mt-4">
+                      上传 Excel 或 CSV 文件，AI 将自动分析并生成报告
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Step: Outline */}
+              {step === "outline" && outline && (
+                <>
+                  <OutlineEditor
+                    outline={outline}
+                    onOutlineChange={setOutline}
+                    onBack={handleBack}
+                    onNext={handleGenerateReport}
+                    nextLabel="生成报告"
+                    isLoading={isLoading}
+                    hideActions
+                  />
+                  <div className="mt-10">
+                    <ThemeSelector
+                      selectedTheme={theme}
+                      onThemeChange={setTheme}
+                      inline
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Step: Generating */}
+              {step === "generating" && (
+                <GenerationProgress
+                  progress={generationProgress}
+                  currentSection={generatingSection}
+                  outline={outline}
+                />
+              )}
+            </div>
           </div>
 
           {/* 大纲页：底部固定栏（返回 + 生成报告） */}
@@ -832,7 +1007,10 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   onClick={handleGenerateReport}
-                  disabled={outline.sections.filter((s) => s.enabled).length === 0 || isLoading}
+                  disabled={
+                    outline.sections.filter((s) => s.enabled).length === 0 ||
+                    isLoading
+                  }
                   className="h-12 px-8 rounded-xl bg-[#1f1f1f] dark:bg-[#e3e3e3] text-white dark:text-[#1f1f1f] text-sm font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity inline-flex items-center gap-2"
                 >
                   {isLoading ? (
@@ -844,7 +1022,8 @@ export default function DashboardPage() {
                     <>
                       生成报告
                       <span className="text-[#9aa0a6] dark:text-[#5f6368] font-normal">
-                        （{outline.sections.filter((s) => s.enabled).length} 章节）
+                        （{outline.sections.filter((s) => s.enabled).length}{" "}
+                        章节）
                       </span>
                     </>
                   )}

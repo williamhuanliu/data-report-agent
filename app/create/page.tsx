@@ -212,7 +212,7 @@ function CreatePageContent() {
   const currentStepIndex = STEP_ORDER.indexOf(step);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--background)]">
+    <div className="min-h-screen flex flex-col bg-background">
       <AppHeader />
 
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-8 py-8 sm:py-12">
@@ -318,11 +318,11 @@ export default function CreatePage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex flex-col bg-[var(--background)]">
+        <div className="min-h-screen flex flex-col bg-background">
           <AppHeader />
           <main className="flex-1 flex items-center justify-center">
             <div className="text-center">
-              <div className="w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
               <p className="text-zinc-500">加载中...</p>
             </div>
           </main>

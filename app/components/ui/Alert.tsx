@@ -77,7 +77,7 @@ export function Alert({
     <div
       role="alert"
       className={`
-        rounded-[var(--radius-md)] border p-4 flex items-start gap-3
+        rounded-md border p-4 flex items-start gap-3
         ${variant === 'error' ? 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200' : ''}
         ${variant === 'success' ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800 text-green-800 dark:text-green-200' : ''}
         ${variant === 'info' ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200' : ''}

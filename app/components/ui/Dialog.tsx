@@ -68,17 +68,17 @@ export function Dialog({
         className={`
           relative w-full ${sizeClasses[size]} max-h-[90vh] sm:max-h-[85vh]
           flex flex-col
-          bg-[var(--surface)] rounded-[var(--radius-xl)] shadow-xl
-          border border-[var(--border)]
+          bg-surface rounded-xl shadow-xl
+          border border-border
           transition-all duration-200
           ${className}
         `}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-4 px-6 py-4 border-b border-[var(--border)] flex-shrink-0">
+        <div className="flex items-start justify-between gap-4 px-6 py-4 border-b border-border flex-shrink-0">
           <div>
             {title && (
-              <h2 id="dialog-title" className="text-lg font-semibold text-[var(--foreground)]">
+              <h2 id="dialog-title" className="text-lg font-semibold text-foreground">
                 {title}
               </h2>
             )}
@@ -91,7 +91,7 @@ export function Dialog({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-[var(--radius-md)] p-2 text-zinc-500 hover:text-[var(--foreground)] hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-2"
+            className="rounded-md p-2 text-zinc-500 hover:text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2"
             aria-label="关闭"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

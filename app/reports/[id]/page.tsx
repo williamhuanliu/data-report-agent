@@ -53,7 +53,7 @@ export default async function ReportPage({ params, searchParams }: ReportPagePro
   const themeStyles = theme ? getThemeCSSVariables(theme) : {};
 
   return (
-    <div className="min-h-screen bg-[var(--background)]" style={themeStyles as React.CSSProperties}>
+    <div className="min-h-screen bg-background" style={themeStyles as React.CSSProperties}>
       {showNav ? <ReportNav reportId={id} /> : null}
 
       {/* 报告内容 - 打印时隐藏导航，保证背景白 */}
@@ -63,8 +63,8 @@ export default async function ReportPage({ params, searchParams }: ReportPagePro
         {/* 关键指标 */}
         {report.analysis.keyMetrics.length > 0 && (
           <section className="mt-8" aria-labelledby="key-metrics-heading">
-            <h2 id="key-metrics-heading" className="text-xl font-semibold text-[var(--foreground)] mb-4 flex items-center gap-2">
-              <span className="w-8 h-8 rounded-[var(--radius-md)] bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+            <h2 id="key-metrics-heading" className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+              <span className="w-8 h-8 rounded-md bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
                 <svg className="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>

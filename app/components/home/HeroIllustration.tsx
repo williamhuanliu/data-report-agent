@@ -5,7 +5,7 @@
  */
 export function HeroIllustration() {
   return (
-    <div className="w-full aspect-video rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] overflow-hidden flex items-center justify-center p-6 sm:p-10">
+    <div className="w-full aspect-video rounded-2xl border border-border bg-surface-elevated overflow-hidden flex items-center justify-center p-6 sm:p-10">
       <svg
         viewBox="0 0 640 360"
         fill="none"

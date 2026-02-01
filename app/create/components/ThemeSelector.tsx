@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { Button, Card } from '@/app/components/ui';
-import { REPORT_THEMES } from '@/lib/themes';
+import { Button, Card } from "@/app/components/ui";
+import { REPORT_THEMES } from "@/lib/themes";
 
 interface ThemeSelectorProps {
   selectedTheme: string;
@@ -25,13 +25,13 @@ export function ThemeSelector({
     <div className={inline ? "max-w-2xl mx-auto" : "max-w-3xl mx-auto"}>
       {inline ? (
         <div className="text-center mb-6">
-          <h2 className="text-lg sm:text-xl font-bold text-[var(--foreground)] mb-2">
+          <h2 className="text-lg sm:text-xl font-bold text-foreground mb-2">
             选择主题
           </h2>
         </div>
       ) : (
         <div className="text-center mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
             选择报告主题
           </h1>
           <p className="text-zinc-500 dark:text-zinc-400">
@@ -46,10 +46,10 @@ export function ThemeSelector({
           return (
             <Card
               key={theme.id}
-              className={`p-4 rounded-[var(--radius-xl)] cursor-pointer transition-all ${
+              className={`p-4 rounded-xl cursor-pointer transition-all ${
                 isSelected
-                  ? 'border-2 border-[var(--color-primary)] shadow-lg'
-                  : 'border border-[var(--border)] hover:border-[var(--color-primary)]/50'
+                  ? "border-2 border-primary shadow-lg"
+                  : "border border-border hover:border-primary/50"
               }`}
               onClick={() => onThemeChange(theme.id)}
             >
@@ -89,13 +89,27 @@ export function ThemeSelector({
 
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-[var(--foreground)]">{theme.name}</h3>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">{theme.description}</p>
+                  <h3 className="font-semibold text-foreground">
+                    {theme.name}
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {theme.description}
+                  </p>
                 </div>
                 {isSelected && (
-                  <div className="w-6 h-6 rounded-full bg-[var(--color-primary)] flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                    <svg
+                      className="w-4 h-4 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   </div>
                 )}
@@ -107,7 +121,12 @@ export function ThemeSelector({
 
       {!inline && onBack != null && onNext != null && (
         <div className="flex items-center gap-3">
-          <Button variant="secondary" size="lg" onClick={onBack} className="min-h-[44px] rounded-xl">
+          <Button
+            variant="secondary"
+            size="lg"
+            onClick={onBack}
+            className="min-h-[44px] rounded-xl"
+          >
             返回
           </Button>
           <Button
@@ -115,7 +134,7 @@ export function ThemeSelector({
             size="lg"
             onClick={onNext}
             loading={isLoading}
-            className="min-h-[44px] rounded-xl flex-1 bg-gradient-to-r from-[var(--color-gradient-start)] to-[var(--color-gradient-end)]"
+            className="min-h-[44px] rounded-xl flex-1 bg-linear-to-r from-gradient-start to-gradient-end"
           >
             生成报告
           </Button>

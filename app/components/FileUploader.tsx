@@ -7,6 +7,23 @@ interface FileUploaderProps {
   isLoading?: boolean;
 }
 
+function isValidFile(file: File): boolean {
+  const validTypes = [
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
+    'application/vnd.ms-excel', // xls
+    'text/csv',
+    'application/csv',
+  ];
+  const validExtensions = ['.xlsx', '.xls', '.csv'];
+
+  const hasValidType = validTypes.includes(file.type);
+  const hasValidExtension = validExtensions.some(ext =>
+    file.name.toLowerCase().endsWith(ext)
+  );
+
+  return hasValidType || hasValidExtension;
+}
+
 export function FileUploader({ onFileSelect, isLoading }: FileUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -39,23 +56,6 @@ export function FileUploader({ onFileSelect, isLoading }: FileUploaderProps) {
       onFileSelect(file);
     }
   }, [onFileSelect]);
-
-  const isValidFile = (file: File): boolean => {
-    const validTypes = [
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
-      'application/vnd.ms-excel', // xls
-      'text/csv',
-      'application/csv',
-    ];
-    const validExtensions = ['.xlsx', '.xls', '.csv'];
-    
-    const hasValidType = validTypes.includes(file.type);
-    const hasValidExtension = validExtensions.some(ext => 
-      file.name.toLowerCase().endsWith(ext)
-    );
-    
-    return hasValidType || hasValidExtension;
-  };
 
   return (
     <div

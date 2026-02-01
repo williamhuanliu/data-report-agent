@@ -5,7 +5,6 @@ import {
   useContext,
   useEffect,
   useState,
-  useCallback,
 } from "react";
 
 type Theme = "light" | "dark" | "system";
@@ -31,24 +30,27 @@ export function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    if (!context) {
-      // Fallback: read from localStorage directly
-      const stored = localStorage.getItem("data-report-theme") as Theme | null;
-      if (stored && ["light", "dark", "system"].includes(stored)) {
-        setLocalTheme(stored);
+    // Defer all setState to timer callback so effect doesn't trigger cascading renders
+    const id = setTimeout(() => {
+      setMounted(true);
+      if (!context) {
+        const stored = localStorage.getItem("data-report-theme") as Theme | null;
+        if (stored && ["light", "dark", "system"].includes(stored)) {
+          setLocalTheme(stored);
+        }
+        const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        setLocalResolved(
+          stored === "dark"
+            ? "dark"
+            : stored === "light"
+            ? "light"
+            : isDark
+            ? "dark"
+            : "light"
+        );
       }
-      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      setLocalResolved(
-        stored === "dark"
-          ? "dark"
-          : stored === "light"
-          ? "light"
-          : isDark
-          ? "dark"
-          : "light"
-      );
-    }
+    }, 0);
+    return () => clearTimeout(id);
   }, [context]);
 
   const theme = context?.theme ?? localTheme;

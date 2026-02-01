@@ -128,7 +128,7 @@ export function DataChatDialog({
       {/* Gamma 风格：左侧简要信息 + 右侧对话区，或单栏对话 */}
       <div className="flex flex-1 min-h-0">
         {/* 左侧：数据摘要 - 小屏可折叠或隐藏 */}
-        <aside className="hidden sm:flex flex-col w-56 flex-shrink-0 border-r border-border bg-zinc-50/50 dark:bg-zinc-900/50">
+        <aside className="hidden sm:flex flex-col w-56 shrink-0 border-r border-border bg-zinc-50/50 dark:bg-zinc-900/50">
           <div className="p-4 text-xs text-zinc-500 dark:text-zinc-400 space-y-1">
             <p className="font-medium text-foreground">数据概览</p>
             <p>
@@ -189,7 +189,7 @@ export function DataChatDialog({
                     }
                   `}
                 >
-                  <div className="whitespace-pre-wrap break-words">
+                  <div className="whitespace-pre-wrap wrap-break-word">
                     {msg.content}
                   </div>
                 </div>
@@ -223,7 +223,7 @@ export function DataChatDialog({
           </div>
 
           {/* 输入区 - Gamma 风格：圆角输入框 + 发送 */}
-          <div className="flex-shrink-0 border-t border-border p-4 sm:p-6">
+          <div className="shrink-0 border-t border-border p-4 sm:p-6">
             <div className="flex gap-2">
               <textarea
                 ref={inputRef}
@@ -246,7 +246,7 @@ export function DataChatDialog({
                 onClick={handleSend}
                 loading={loading}
                 disabled={!inputValue.trim()}
-                className="flex-shrink-0 min-h-[44px] px-5"
+                className="shrink-0 min-h-[44px] px-5"
                 aria-label="发送"
               >
                 <svg
@@ -267,7 +267,7 @@ export function DataChatDialog({
           </div>
 
           {/* 底部：生成报告 */}
-          <div className="flex-shrink-0 border-t border-border px-4 sm:px-6 py-4 flex justify-end">
+          <div className="shrink-0 border-t border-border px-4 sm:px-6 py-4 flex justify-end">
             <Button
               variant="primary"
               size="lg"

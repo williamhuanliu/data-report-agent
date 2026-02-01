@@ -25,11 +25,11 @@ export function ReportNav({ reportId }: ReportNavProps) {
   };
 
   return (
-    <nav className="print:hidden sticky top-0 z-10 bg-surface/95 backdrop-blur-md border-b border-border supports-[backdrop-filter]:bg-surface/80">
+    <nav className="print:hidden sticky top-0 z-10 bg-surface/95 backdrop-blur-md border-b border-border supports-backdrop-filter:bg-surface/80">
       <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
         <Link
           href="/"
-          className="flex items-center gap-2 min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2"
+          className="flex items-center gap-2 min-h-[44px] min-w-[44px] justify-center rounded-md text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2"
           aria-label="返回首页"
         >
           <svg

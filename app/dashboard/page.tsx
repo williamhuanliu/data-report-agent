@@ -58,14 +58,6 @@ function groupReportsByTime(
   return groups.filter((g) => g.items.length > 0);
 }
 
-const STEP_ORDER: CreateStep[] = [
-  "mode",
-  "input",
-  "outline",
-  "theme",
-  "generating",
-];
-
 export default function DashboardPage() {
   const router = useRouter();
   const { data: session } = useSession();
@@ -242,40 +234,6 @@ export default function DashboardPage() {
     }
   }, []);
 
-  const handleGenerateOutline = async () => {
-    setError(null);
-    setIsLoading(true);
-
-    try {
-      const response = await fetch("/api/generate-outline", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mode,
-          idea: mode === "generate" ? idea : undefined,
-          pastedContent: mode === "paste" ? pastedContent : undefined,
-          data: mode === "import" ? parsedData : undefined,
-          title,
-        }),
-      });
-
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error || "生成大纲失败");
-      }
-
-      setOutline(result.outline);
-      if (result.outline.title) {
-        setTitle(result.outline.title);
-      }
-      goToStep("outline");
-    } catch (err) {
-      setError(getFriendlyErrorMessage(err));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleGenerateReport = async () => {
     if (!outline) return;
 
@@ -339,13 +297,6 @@ export default function DashboardPage() {
       setError(getFriendlyErrorMessage(err));
       goToStep("outline");
     }
-  };
-
-  const canProceedFromInput = () => {
-    if (mode === "generate") return idea.trim().length > 0;
-    if (mode === "paste") return pastedContent.trim().length > 0;
-    if (mode === "import") return parsedData !== null;
-    return false;
   };
 
   const handleBack = () => {

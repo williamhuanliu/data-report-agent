@@ -75,7 +75,7 @@ export function Dialog({
         `}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-4 px-6 py-4 border-b border-border flex-shrink-0">
+        <div className="flex items-start justify-between gap-4 px-6 py-4 border-b border-border shrink-0">
           <div>
             {title && (
               <h2 id="dialog-title" className="text-lg font-semibold text-foreground">

@@ -61,10 +61,10 @@ export function DataPreview({ data, maxRows = 10 }: DataPreviewProps) {
                   className="px-4 py-3 text-left font-medium text-zinc-700 dark:text-zinc-300 whitespace-nowrap [font-feature-settings:normal]"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-xs flex-shrink-0">
+                    <span className="w-5 h-5 rounded bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-xs shrink-0">
                       {getTypeIcon(columnTypes[header])}
                     </span>
-                    <span className="[word-break:keep-all]">{header}</span>
+                    <span className="break-keep">{header}</span>
                   </div>
                 </th>
               ))}

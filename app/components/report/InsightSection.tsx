@@ -38,7 +38,7 @@ export function InsightSection({ insights }: InsightSectionProps) {
             className="p-4 bg-surface rounded-lg border border-border flex gap-3"
           >
             <div
-              className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium"
+              className="shrink-0 w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium"
               aria-hidden
             >
               {index + 1}
@@ -92,7 +92,7 @@ export function RecommendationSection({
             key={index}
             className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800/30 flex gap-3"
           >
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <svg
                 className="w-5 h-5 text-green-600 dark:text-green-400"
                 fill="none"

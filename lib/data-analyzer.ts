@@ -751,6 +751,19 @@ function calculateGrowthRate(values: number[]): {
   return { overall, periods };
 }
 
+/**
+ * 主指标优先级：名称含这些词的数值字段优先用于趋势/柱状图（最能表达业务场景）
+ */
+const PRIMARY_METRIC_HINTS = ['播放', '播放量', '收入', '销量', '点击', 'views', 'clicks', 'revenue', 'sales'];
+
+function sortByPrimaryMetric<T extends { name: string }>(fields: T[]): T[] {
+  return [...fields].sort((a, b) => {
+    const scoreA = PRIMARY_METRIC_HINTS.some((h) => a.name.includes(h)) ? 0 : 1;
+    const scoreB = PRIMARY_METRIC_HINTS.some((h) => b.name.includes(h)) ? 0 : 1;
+    return scoreA - scoreB;
+  });
+}
+
 /** 
  * 生成图表候选
  * 
@@ -759,6 +772,7 @@ function calculateGrowthRate(values: number[]): {
  * 2. 柱状图用于类别对比、排名、分布 - 无时间要求
  * 3. 自动选择最佳时间粒度（日/周/月/季/年）
  * 4. 多系列趋势图：当有分类维度时，展示每个类别的趋势
+ * 5. 数值字段按主指标优先排序，候选 description 含「适用场景」供 AI 匹配章节意图
  */
 function generateChartCandidates(
   files: FileAnalysis[],
@@ -816,8 +830,10 @@ function generateChartCandidates(
         }[granularity];
         
         // ===== 类型1: 总量趋势图（仅使用可累加指标） =====
-        // 过滤出可累加的数值字段（排除排名、比率等）
-        const summableFields = numericFields.filter(f => getAggregationType(f.name) === 'sum');
+        // 过滤出可累加的数值字段，并按主指标优先排序（播放、收入、销量等优先）
+        const summableFields = sortByPrimaryMetric(
+          numericFields.filter(f => getAggregationType(f.name) === 'sum')
+        );
         
         if (summableFields.length > 0) {
           const totalTrendData: Record<string, Record<string, number>> = {};
@@ -874,7 +890,7 @@ function generateChartCandidates(
               id: `chart_${++chartId}`,
               title: `${mainMetric}${granularityLabel}度趋势`,
               chartType: 'line',
-              description: `展示${mainMetric}按${granularityLabel}的变化趋势${growthDesc}。环比变化：${momChanges.join('，') || '数据不足'}`,
+              description: `适用场景：展示整体随时间趋势。展示${mainMetric}按${granularityLabel}的变化趋势${growthDesc}。环比变化：${momChanges.join('，') || '数据不足'}`,
               data: totalChartData,
               relevance: 98, // 总量趋势最高优先级
               source: `来自${file.fileName || `文件${i + 1}`}，按${dateField.name}聚合`,
@@ -949,7 +965,7 @@ function generateChartCandidates(
                 id: `chart_${++chartId}`,
                 title: `各${categoryField.name}${mainMetric}趋势对比`,
                 chartType: 'line',
-                description: `展示Top${seriesWithGrowth.length}个${categoryField.name}的${mainMetric}随时间变化趋势。增长情况：${growthDescriptions || '数据不足'}`,
+                description: `适用场景：展示各分类随时间趋势对比。展示Top${seriesWithGrowth.length}个${categoryField.name}的${mainMetric}随时间变化趋势。增长情况：${growthDescriptions || '数据不足'}`,
                 data: multiSeriesData,
                 relevance: 96, // 多系列趋势图高优先级
                 source: `来自${file.fileName || `文件${i + 1}`}，按${dateField.name}和${categoryField.name}分组`,
@@ -964,8 +980,10 @@ function generateChartCandidates(
     // 2. 分类对比图（柱状图）- 无时间维度的类别比较
     const categoryField = file.fields.find(f => f.type === 'category');
     
-    // 过滤出可累加的数值字段用于柱状图
-    const summableNumericFields = numericFields.filter(f => getAggregationType(f.name) === 'sum');
+    // 过滤出可累加的数值字段并按主指标优先排序
+    const summableNumericFields = sortByPrimaryMetric(
+      numericFields.filter(f => getAggregationType(f.name) === 'sum')
+    );
     
     if (categoryField && summableNumericFields.length > 0) {
       const mainMetricForBar = summableNumericFields[0].name;
@@ -1003,7 +1021,7 @@ function generateChartCandidates(
           id: `chart_${++chartId}`,
           title: `各${categoryField.name}${mainMetricForBar}排名${concentrationNote}`,
           chartType: 'bar', // 类别对比 → 柱状图
-          description: `按${categoryField.name}分组统计${mainMetricForBar}总量排名，总计${formatNumber(totalValue)}，Top3占比${top3Percent.toFixed(1)}%`,
+          description: `适用场景：各${categoryField.name}的排名/集中度对比。按${categoryField.name}分组统计${mainMetricForBar}总量排名，总计${formatNumber(totalValue)}，Top3占比${top3Percent.toFixed(1)}%`,
           data: chartData,
           relevance: 80,
           source: `来自${file.fileName || `文件${i + 1}`}`,
@@ -1024,7 +1042,7 @@ function generateChartCandidates(
         id: `chart_${++chartId}`,
         title: stat.title,
         chartType: 'bar',
-        description: stat.description,
+        description: `适用场景：跨文件按维度统计对比。${stat.description}`,
         data: chartData,
         relevance: 95, // 跨文件分析更有价值
         source: stat.description,
@@ -1392,6 +1410,34 @@ export function getDataRichness(analysis: DataAnalysis): {
     : '建议报告包含 4-6 个章节，选择 1 个最能支撑核心观点的图表。';
 
   return { isRich, maxCharts, maxSections, hint };
+}
+
+/**
+ * 统一分析入口：供 generate-outline、generate-report 的 import 分支使用
+ * 输入数据列表与可选文件名，输出预分析结果、引用清单、摘要、图表候选与丰富度
+ */
+export function getAnalysisInput(
+  dataList: ParsedData[],
+  fileNames?: string[]
+): {
+  dataAnalysis: DataAnalysis;
+  citationList: string[];
+  analysisSummary: string;
+  suggestedCharts: ChartCandidate[];
+  dataRichness: ReturnType<typeof getDataRichness>;
+} {
+  const names = fileNames || dataList.map((_, i) => `文件${i + 1}`);
+  const dataAnalysis = analyzeData(dataList, names);
+  const citationList = generateCitationList(dataAnalysis);
+  const analysisSummary = generateAnalysisSummary(dataAnalysis);
+  const dataRichness = getDataRichness(dataAnalysis);
+  return {
+    dataAnalysis,
+    citationList,
+    analysisSummary,
+    suggestedCharts: dataAnalysis.suggestedCharts,
+    dataRichness,
+  };
 }
 
 export { formatNumber };

@@ -4,7 +4,17 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AppHeader } from '../components/layout/AppHeader';
 import { AppFooter } from '../components/layout/AppFooter';
-import { Button } from '../components/ui';
+import {
+  Button,
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '../components/ui';
 import type { Report } from '@/lib/types';
 
 function formatDate(iso: string) {
@@ -22,6 +32,9 @@ export default function ReportsListPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deleteConfirmTitle, setDeleteConfirmTitle] = useState<string | null>(null);
 
   async function fetchReports() {
     setLoading(true);
@@ -41,11 +54,18 @@ export default function ReportsListPage() {
     fetchReports();
   }, []);
 
-  async function handleDelete(id: string, title: string) {
-    if (!confirm(`确定要删除报告「${title}」吗？此操作不可恢复。`)) return;
-    setDeletingId(id);
+  function openDeleteConfirm(id: string, title: string) {
+    setDeleteConfirmId(id);
+    setDeleteConfirmTitle(title);
+    setDeleteConfirmOpen(true);
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deleteConfirmId) return;
+    const idToDelete = deleteConfirmId;
+    setDeletingId(idToDelete);
     try {
-      const res = await fetch(`/api/reports/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/reports/${idToDelete}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('删除失败');
       await fetchReports();
     } catch {
@@ -117,7 +137,7 @@ export default function ReportsListPage() {
                     </Link>
                     <button
                       type="button"
-                      onClick={() => handleDelete(report.id, report.title)}
+                      onClick={() => openDeleteConfirm(report.id, report.title)}
                       disabled={deletingId === report.id}
                       className="inline-flex h-9 items-center justify-center rounded-lg px-3 text-sm font-medium text-error hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2"
                     >
@@ -131,6 +151,34 @@ export default function ReportsListPage() {
         )}
       </main>
       <AppFooter />
+
+      <AlertDialog
+        open={deleteConfirmOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteConfirmOpen(false);
+            setDeleteConfirmId(null);
+            setDeleteConfirmTitle(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>删除报告</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteConfirmTitle
+                ? `确定要删除报告「${deleteConfirmTitle}」吗？此操作不可恢复。`
+                : '确定要删除该报告吗？此操作不可恢复。'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} disabled={!!deletingId}>
+              {deletingId ? '删除中…' : '删除'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

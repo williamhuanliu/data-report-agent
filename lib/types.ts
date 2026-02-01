@@ -77,6 +77,12 @@ export interface CreateWizardState {
   title: string;
 }
 
+/** 报告元数据（用于编辑时数据 grounded） */
+export interface ReportMeta {
+  /** 仅可引用的统计清单（10～20 条），编辑时约束 AI 不编造数字 */
+  citationList?: string[];
+}
+
 export interface Report {
   id: string;
   title: string;
@@ -87,6 +93,8 @@ export interface Report {
   openrouterModel?: string;
   theme?: string;
   outline?: ReportOutline;
+  /** 报告元数据（如引用清单，供编辑章节时注入） */
+  meta?: ReportMeta;
 }
 
 export interface ParsedData {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { getDefaultOpenRouterModel } from '@/lib/ai/openrouter';
+import { getReport } from '@/lib/storage';
 
 let openrouter: OpenAI | null = null;
 
@@ -18,7 +19,7 @@ function getOpenRouterClient(): OpenAI {
   return openrouter;
 }
 
-const EDIT_SYSTEM_PROMPT = `你是一位专业的数据报告编辑。根据用户的指令修改报告内容。
+const EDIT_SYSTEM_PROMPT_BASE = `你是一位专业的数据报告编辑。根据用户的指令修改报告内容。
 
 规则：
 1. 保持原内容的核心信息，除非用户明确要求删除
@@ -36,8 +37,8 @@ const EDIT_SYSTEM_PROMPT = `你是一位专业的数据报告编辑。根据用�
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { sectionType, currentContent, instruction, model } = body as {
-      reportId: string;
+    const { reportId, sectionType, currentContent, instruction, model } = body as {
+      reportId?: string;
       sectionType: string;
       currentContent: unknown;
       instruction: string;
@@ -47,6 +48,22 @@ export async function POST(request: NextRequest) {
 
     if (!sectionType || currentContent === undefined || !instruction) {
       return NextResponse.json({ error: '缺少必要参数' }, { status: 400 });
+    }
+
+    // 若有 reportId，加载报告并注入引用清单（数据 grounded 编辑）
+    let systemPrompt = EDIT_SYSTEM_PROMPT_BASE;
+    if (reportId) {
+      const report = await getReport(reportId);
+      if (report?.meta?.citationList && report.meta.citationList.length > 0) {
+        const list = report.meta.citationList.slice(0, 20);
+        systemPrompt += `
+
+## 数据约束（务必遵守）
+本报告有预计算的「仅可引用统计清单」。修改时**只可引用**以下表述中的数字，**不得出现**清单外的具体数值或比例；单位须与清单一致（如清单为「XXX万」或「X.XX亿」，勿写「X.XX万」）。
+**缺失数据表述**：若某维度在某时间段无记录（如某歌曲在某月无播放数据），**必须**表述为「XX 在 YY 月后无记录」或「部分月份无数据」，**严禁**写「降至 0」「降幅-100%」「断崖式下跌」「需关注是否下架/版权」等（无记录≠下降至零）。
+
+${list.map((line) => `- ${line}`).join('\n')}`;
+      }
     }
 
     // Build prompt based on section type
@@ -77,7 +94,7 @@ ${responseFormat}`;
     const response = await getOpenRouterClient().chat.completions.create({
       model: chatModel,
       messages: [
-        { role: 'system', content: EDIT_SYSTEM_PROMPT },
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
       temperature: 0.3,

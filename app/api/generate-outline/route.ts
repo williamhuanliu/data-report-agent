@@ -5,12 +5,25 @@ import {
   buildOutlinePrompt,
   ENHANCED_OUTLINE_SYSTEM_PROMPT,
   buildEnhancedOutlinePrompt,
+  OUTLINE_MERGE_SYSTEM_PROMPT,
+  buildOutlineMergePrompt,
 } from '@/lib/ai/prompt';
 import { getDefaultOpenRouterModel } from '@/lib/ai/openrouter';
-import { analyzeData, generateAnalysisSummary, getDataRichness } from '@/lib/data-analyzer';
-import type { CreateMode, ParsedData, ReportOutline } from '@/lib/types';
+import { getAnalysisInput } from '@/lib/data-analyzer';
+import type { CreateMode, ParsedData, ReportOutline, OutlineSectionType } from '@/lib/types';
 
 let openrouter: OpenAI | null = null;
+
+const SINGLE_OCCURRENCE_TYPES: OutlineSectionType[] = ['summary', 'metrics', 'insight', 'recommendation'];
+
+function hasDuplicateSectionTypes(outline: ReportOutline): boolean {
+  const counts = new Map<OutlineSectionType, number>();
+  for (const s of outline.sections) {
+    if (!SINGLE_OCCURRENCE_TYPES.includes(s.type as OutlineSectionType)) continue;
+    counts.set(s.type as OutlineSectionType, (counts.get(s.type as OutlineSectionType) ?? 0) + 1);
+  }
+  return [...counts.values()].some((c) => c > 1);
+}
 
 function getOpenRouterClient(): OpenAI {
   if (!openrouter) {
@@ -64,14 +77,11 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: '请上传数据文件' }, { status: 400 });
       }
 
-      // === 核心改进：使用数据分析引擎生成增强摘要 ===
+      // === 统一分析入口：getAnalysisInput ===
       const names = fileNames || list.map((_, i) => `文件${i + 1}`);
-      const analysis = analyzeData(list, names);
-      const analysisSummary = generateAnalysisSummary(analysis);
-      const richness = getDataRichness(analysis);
+      const input = getAnalysisInput(list, names);
 
-      // 使用增强版 Prompt（传入丰富度以支持多章节、多图表章节）
-      userPrompt = buildEnhancedOutlinePrompt(analysisSummary, title, richness);
+      userPrompt = buildEnhancedOutlinePrompt(input.analysisSummary, title, input.dataRichness);
       systemPrompt = ENHANCED_OUTLINE_SYSTEM_PROMPT;
 
     } else {
@@ -98,11 +108,35 @@ export async function POST(request: NextRequest) {
       throw new Error('无法从响应中提取大纲');
     }
 
-    const outline = JSON.parse(jsonMatch[0]) as ReportOutline;
+    let outline = JSON.parse(jsonMatch[0]) as ReportOutline;
 
     // Validate outline structure
     if (!outline.title || !Array.isArray(outline.sections)) {
       throw new Error('大纲格式不正确');
+    }
+
+    // 同类型章节重复时交给模型合并（如多个「核心洞察」合并为一节）
+    if (hasDuplicateSectionTypes(outline)) {
+      try {
+        const mergeResponse = await getOpenRouterClient().chat.completions.create({
+          model: chatModel,
+          messages: [
+            { role: 'system', content: OUTLINE_MERGE_SYSTEM_PROMPT },
+            { role: 'user', content: buildOutlineMergePrompt(JSON.stringify(outline, null, 2)) },
+          ],
+          temperature: 0.2,
+        });
+        const mergeContent = mergeResponse.choices[0]?.message?.content;
+        if (mergeContent) {
+          const mergeMatch = mergeContent.match(/\{[\s\S]*\}/);
+          if (mergeMatch) {
+            const merged = JSON.parse(mergeMatch[0]) as ReportOutline;
+            if (merged.title && Array.isArray(merged.sections)) outline = merged;
+          }
+        }
+      } catch (mergeErr) {
+        console.warn('大纲合并失败，使用原始大纲:', mergeErr);
+      }
     }
 
     return NextResponse.json({ success: true, outline });

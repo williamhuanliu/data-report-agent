@@ -37,14 +37,28 @@ export function getDefaultOpenRouterModel(): string {
   return process.env.OPENROUTER_DEFAULT_MODEL || DEFAULT_OPENROUTER_MODEL_ID;
 }
 
-// OpenRouter 支持的常用模型（便宜优先）
+// OpenRouter 支持的常用模型（便宜/快 → 强，按性价比排序）
 export const OPENROUTER_MODELS = [
+  // 轻量 / 便宜
   { id: "google/gemini-2.0-flash-001", name: "Gemini 2.0 Flash（默认）" },
+  { id: "google/gemini-flash-1.5", name: "Gemini 1.5 Flash" },
   { id: "openai/gpt-4o-mini", name: "GPT-4o Mini" },
+  { id: "anthropic/claude-3-haiku", name: "Claude 3 Haiku" },
   { id: "deepseek/deepseek-chat", name: "DeepSeek Chat" },
+  { id: "meta-llama/llama-3.2-3b-instruct", name: "Llama 3.2 3B" },
+  // 中等
   { id: "openai/gpt-4o", name: "GPT-4o" },
+  { id: "anthropic/claude-3.5-sonnet", name: "Claude 3.5 Sonnet" },
   { id: "anthropic/claude-sonnet-4", name: "Claude Sonnet 4" },
+  { id: "google/gemini-pro-1.5", name: "Gemini 1.5 Pro" },
+  { id: "deepseek/deepseek-r1", name: "DeepSeek R1" },
+  { id: "mistralai/mistral-large", name: "Mistral Large" },
+  { id: "qwen/qwen-2.5-72b-instruct", name: "Qwen 2.5 72B" },
   { id: "meta-llama/llama-3.3-70b-instruct", name: "Llama 3.3 70B" },
+  { id: "cohere/command-r-plus", name: "Cohere Command R+" },
+  // 高端
+  { id: "anthropic/claude-3-opus", name: "Claude 3 Opus" },
+  { id: "openai/gpt-4-turbo", name: "GPT-4 Turbo" },
 ] as const;
 
 export type OpenRouterModel = (typeof OPENROUTER_MODELS)[number]["id"];

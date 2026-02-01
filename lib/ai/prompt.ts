@@ -137,6 +137,7 @@ export const OUTLINE_SYSTEM_PROMPT = `你是一位专业的数据报告策划师
 规则：
 - sections 数组通常包含 4-6 个章节
 - type 必须是以下之一：summary（摘要）、metrics（关键指标）、chart（图表可视化）、insight（核心洞察）、recommendation（行动建议）
+- **类型唯一**：summary、metrics、insight、recommendation 每种类型**只能出现一节**；chart（图表）可多节。不要输出多个「核心洞察」或多个「行动建议」等
 - 每个 section 的 id 应唯一，可用 section_1, section_2 等
 - enabled 默认为 true
 - 根据输入内容智能规划章节，例如数据分析类报告通常需要 metrics 和 chart，而策略类报告可能更侧重 insight 和 recommendation
@@ -280,7 +281,7 @@ export const ENHANCED_REPORT_SYSTEM_PROMPT = `你是资深数据分析师，向 
 keyMetrics 和 insights 应**同时包含**上述多类信息（含趋势、集中度/排名、跨文件关联等），避免通篇只谈「增长X%」。
 
 ## 三条铁律（违反即不合格）
-1. **只引用清单中的数字**：keyMetrics、insights 中的每一个数值/比例/增长率，必须能在「【仅可引用的统计清单】」中找到对应表述，不得自行计算或编造。**单位严禁写错**：若清单写「即 38760万 或 3.88亿」，则 value 只能二选一写「38760万」或「3.88亿」；**严禁**写「3.88万」「3.88万万」或任何「X.XX万万」（应写「XXX万」或「X.XX亿」）。**占比/分布严禁张冠李戴**：清单中「流行风格 Top3集中度 93.3%」只能用于流行，不能写成「中国风占比93.3%」等，维度须与清单一致。
+1. **只引用清单中的数字**：keyMetrics、insights 中的每一个数值/比例/增长率，必须能在「【仅可引用的统计清单】」中找到对应表述，不得自行计算或编造。**单位必须与清单完全一致**：总播放量、总计数等大数，若清单写「即 38760万 或 3.88亿」，则 value 只能二选一写「38760万」或「3.88亿」；**严禁**写「3.88万」「3.88万万」或任何「X.XX万」「X.XX万万」（大数应写「XXX万」或「X.XX亿」，勿把亿级写成万级）。**占比/分布严禁张冠李戴**：清单中「流行风格 Top3集中度 93.3%」只能用于流行，不能写成「中国风占比93.3%」等，维度须与清单一致。
 2. **洞察必须有结论+实体**：先给结论（所以呢？），再写数据，并点名具体名称（如《告白气球》、周杰伦、杰威尔音乐）。禁止只写「头部集中度 69.5%」就结束。
 3. **建议必须对应本数据**：每条建议要对应清单中的具体发现（如哪家厂牌/哪类歌曲该重点推），禁止空洞句（如「打造爆款」「优化节奏」不挂钩具体维度即视为空洞）。
 
@@ -295,6 +296,17 @@ keyMetrics 和 insights 应**同时包含**上述多类信息（含趋势、集�
 - 建议正确：「基于杰威尔音乐在按歌手统计中的高占比，建议其在与平台合作时重点打包周杰伦经典曲目，同时用邓紫棋等艺人做差异化曝光。」
 - 建议错误：「建议打造爆款、优化节奏。」（未结合本数据）
 
+## 图表选择（按场景匹配）
+选择最能表达**本报告核心场景**的图表：**趋势类**章节选折线图（适用场景：展示整体/各分类随时间趋势），**排名/对比类**章节选柱状图（适用场景：各X的排名/集中度对比、跨文件按维度统计）。多图表时覆盖不同维度（如 1 个趋势 + 1 个排名/跨文件）。图表候选的 **description 中说明了「适用场景」**，请按各章节意图匹配选择，不要只看 title。
+
+## 大纲与输出字段对应（按章节组织内容）
+- 大纲中 **type=summary** 的章节 → 对应输出的 **summary**
+- **type=metrics** → **keyMetrics**
+- **type=insight** → **insights**
+- **type=recommendation** → **recommendations**
+- **type=chart** → 从「推荐图表候选」中选择的 **selectedChartId** 或 **selectedChartIds**（按大纲中 chart 章节顺序，第一个图表章节选趋势类、第二个选排名/跨文件类等）
+按大纲中 enabled=true 的章节顺序组织上述内容。
+
 ## 输出格式（严格 JSON，不要输出其他内容）
 {
   "summary": "一句话核心结论（30～60字），须包含：规模或趋势 + 一条核心发现（如集中度/跨文件结论），结论先行",
@@ -306,12 +318,12 @@ keyMetrics 和 insights 应**同时包含**上述多类信息（含趋势、集�
 }
 
 ## 输出前自检（在脑中过一遍再输出）
-- keyMetrics 中每个 value 是否都能在「仅可引用的统计清单」中找到？**单位是否正确**（如总计单位为万则写「XXX万」或「X.XX亿」，勿写「X.XX万」）？
+- keyMetrics 中每个 value 是否都能在「仅可引用的统计清单」中找到？**单位是否与清单完全一致**（总播放量/总计数等大数：清单为「XXX万」或「X.XX亿」时只能二选一，严禁「X.XX万」「万万」）？
 - 报告是否**同时覆盖**了趋势、分布/构成、集中度/排名、跨文件关联等多类信息，而非只写趋势？
 - 每条 insight 是否都有结论、具体实体（歌名/人名/厂牌名）、业务含义？
 - 对「无记录」的维度是否用了「某月后无记录」而非「降至 0」「断崖式下跌」？
 - 每条 recommendation 是否都对应了本数据中的具体发现？
-- 图表 id 是否都来自「推荐图表候选」？`;
+- 图表 id 是否都来自「推荐图表候选」？所选图表是否按**适用场景**与章节意图匹配（趋势用折线、排名/对比用柱状）？`;
 
 /** 数据丰富度（用于决定多图表/多章节） */
 export interface DataRichness {
@@ -326,17 +338,28 @@ export interface DataRichness {
  * 结构：大纲 → 【仅可引用的统计清单】→ 完整统计摘要 → 图表候选 → 本步任务（两步法+自检）
  * @param citationList 仅可引用的统计清单（10～18 条），模型只能从这些句中取数字
  * @param richness 数据丰富度；当 isRich 为 true 时，AI 应选择多图表并填写 selectedChartIds
+ * @param preferredChartCount 大纲中启用的图表章节数；若提供则据此决定选图数量（由大纲决定），否则用 richness
  */
 export function buildEnhancedReportPrompt(
   outlineJson: string,
   analysisSummary: string,
   chartCandidatesJson: string,
   richness?: DataRichness,
-  citationList?: string[]
+  citationList?: string[],
+  preferredChartCount?: number
 ): string {
-  const multiChartInstruction = richness?.isRich
-    ? `**图表选择（本数据信息量丰富）**：请从「推荐图表候选」中选择 **2～${richness.maxCharts} 个**图表，填写到 **selectedChartIds** 数组；不要填 selectedChartId。`
-    : `**图表选择**：从「推荐图表候选」中选择 **1 个**最能支撑核心观点的图表，填写其 id 到 **selectedChartId**。`;
+  const wantMultiple =
+    preferredChartCount != null
+      ? preferredChartCount > 1
+      : richness?.isRich ?? false;
+  const chartCount =
+    preferredChartCount != null
+      ? Math.min(preferredChartCount, richness?.maxCharts ?? 6)
+      : richness?.maxCharts ?? 1;
+
+  const multiChartInstruction = wantMultiple
+    ? `**图表选择**${preferredChartCount != null ? `（大纲中有 ${preferredChartCount} 个图表章节，请选满对应数量）` : '（本数据信息量丰富）'}：请从「推荐图表候选」中选择 **${chartCount} 个**图表，填写到 **selectedChartIds** 数组；不要填 selectedChartId。选择时按**适用场景**匹配：趋势类选 description 含「展示整体/各分类随时间趋势」的折线图，排名/对比类选含「排名/集中度对比」或「跨文件按维度统计」的柱状图，多图覆盖不同维度。`
+    : `**图表选择**：从「推荐图表候选」中选择 **1 个**最能支撑核心观点的图表，填写其 id 到 **selectedChartId**。候选的 description 中说明了「适用场景」，请按章节意图匹配（趋势选折线、排名/对比选柱状），不要只看 title。`;
 
   const citationBlock =
     citationList && citationList.length > 0
@@ -366,7 +389,7 @@ ${multiChartInstruction}
 1. 从上文「【仅可引用的统计清单】」中选定你将引用的 5～12 条，**注意覆盖多类信息**：趋势、分布/构成、集中度/排名、**跨文件关联**（若清单中有「跨文件 - 按XX统计」请至少选 1 条）、规模或离散度等，不要只选趋势类。
 2. 仅基于这些选定的数字撰写 summary、keyMetrics、insights、recommendations；**至少 1 条 insight 来自跨文件统计**（如按歌手/厂牌的播放量排名或集中度）；每条洞察要有结论、具体实体和业务含义，每条建议要对应本数据中的具体发现。
 
-**输出前自检**：keyMetrics 与 insights 是否同时包含趋势、分布/集中度/排名、**跨文件关联**（多文件时至少 1 条）等多类信息？总播放量的 value 是否写成了「XXXXX万」或「X.XX亿」（严禁 3.88万、3.88万万）？对无记录是否用了「某月后无记录」而非「降至0」「断崖式下跌」「下架」？每条 insight 是否都有结论+实体+所以呢？每条 recommendation 是否都对应本数据？图表 id 是否都来自推荐图表候选？`;
+**输出前自检**：keyMetrics 与 insights 是否同时包含趋势、分布/集中度/排名、**跨文件关联**（多文件时至少 1 条）等多类信息？总播放量/总计数等大数的 value 是否与清单单位**完全一致**（清单为「XXX万」或「X.XX亿」时只能二选一，严禁「X.XX万」「万万」）？对无记录是否用了「某月后无记录」而非「降至0」「断崖式下跌」「下架」？每条 insight 是否都有结论+实体+所以呢？每条 recommendation 是否都对应本数据？图表 id 是否都来自推荐图表候选？所选图表是否按 description 中的「适用场景」与章节意图匹配？`;
 }
 
 /**
@@ -390,17 +413,17 @@ export const ENHANCED_OUTLINE_SYSTEM_PROMPT = `你是一位专业的数据报告
 }
 
 ## 规则
-- sections 数组：数据简单时 4-6 个章节，**数据信息量丰富时 6-8 个章节**
+- **类型唯一**：summary、metrics、insight、recommendation 每种类型**只能出现一节**；chart（图表）可多节。不要输出多个「核心洞察」或多个「行动建议」
+- sections 数组：**根据数据特征自行决定**章节数（4-6 或 6-8）与图表章节数（1 个或 2-3 个）；数据简单时 4-6 章、1 个图表，信息量丰富（多文件、有关联、可展示图表多）时可 6-8 章、多个 chart 章节
 - type 必须是以下之一：summary（摘要）、metrics（关键指标）、chart（图表可视化）、insight（核心洞察）、recommendation（行动建议）
 - 每个 section 的 id 应唯一，可用 section_1, section_2 等
 - enabled 默认为 true
-- **信息量丰富时**：可包含多个 type 为 chart 的章节（如「趋势分析」「排名对比」「跨文件分析」），每章对应不同维度的图表
 
 ## 根据数据特征规划章节
 - 如果有时间序列数据，应包含趋势分析章节（chart）
 - 如果有多个数据源的关联关系，必须包含"跨数据源分析"章节（可为 insight 或 chart）
 - 如果有跨文件统计结果，应设计专门章节展示这些洞察（chart 或 insight）
-- **当系统提示「信息量丰富」时**：设计 6-8 章，其中可包含 2-3 个图表章节（如：核心趋势图、分类排名图、跨文件对比图）
+- 若下方有「数据说明」提示信息量丰富，可设计 6-8 章、2-3 个图表章节（如：核心趋势图、分类排名图、跨文件对比图）；否则 4-6 章、1 个图表章节即可
 - 章节顺序建议：summary → metrics → chart（可多个）→ insight → recommendation`;
 
 /**
@@ -419,11 +442,49 @@ ${analysisSummary}
 请根据以上数据分析结果，设计一份高质量的数据分析报告大纲。`;
 
   if (richness?.hint) {
-    prompt += `\n\n**数据说明**：${richness.hint}`;
+    prompt += `\n\n**数据说明（供参考，请根据数据复杂度自行决定章节数与图表数量）**：${richness.hint}`;
   }
   if (title) {
     prompt += `\n\n用户希望报告标题为：${title}`;
   }
 
   return prompt;
+}
+
+/** 大纲合并：同类型章节去重（交给模型决策保留哪一条） */
+export const OUTLINE_MERGE_SYSTEM_PROMPT = `你是一位数据报告结构编辑。当前大纲中存在同类型章节重复（如多个「核心洞察」），需要合并为每种类型至多一节。
+
+规则：
+- type 为 summary、metrics、insight、recommendation 的章节，每种类型**只保留一节**，保留你认为标题与描述最合适的那一节，其余合并掉。
+- type 为 chart 的章节**可保留多节**（不同图表对应不同章节），不要合并。
+- 输出格式与输入相同，为完整 JSON：{ "title": "报告标题", "sections": [ ... ] }。
+- sections 中每项保留 id, type, title, description, enabled；合并后 id 可重新编号（如 section_1, section_2）。
+- 不要输出任何解释，只输出 JSON。`;
+
+export function buildOutlineMergePrompt(outlineJson: string): string {
+  return `当前大纲（存在同类型重复，请合并）：
+
+${outlineJson}
+
+请输出合并后的大纲 JSON，summary/metrics/insight/recommendation 各仅一节，chart 可多节。`;
+}
+
+/** 图表重选：当模型返回的图表 ID 无效时，由模型从有效候选中重选 */
+export const CHART_SELECT_FALLBACK_SYSTEM_PROMPT = `你负责为数据报告选择最合适的图表。系统给出了报告大纲和可选图表列表，请从中选出最贴合大纲与报告意图的图表 id。
+
+只输出一个 JSON 对象，不要其他内容，格式：{ "selectedChartIds": ["id1", "id2"] }
+- 若只需一个图，数组长度为 1；若大纲中有多个图表章节，可选多个 id，顺序与章节意图对应（如第一个选趋势类，第二个选排名类）。
+- 所有 id 必须来自下方「可选图表」列表中的 id，不要编造。`;
+
+export function buildChartSelectFallbackPrompt(
+  outlineJson: string,
+  chartCandidatesJson: string
+): string {
+  return `## 报告大纲
+${outlineJson}
+
+## 可选图表（只能从下列 id 中选择）
+${chartCandidatesJson}
+
+请输出 JSON：{ "selectedChartIds": ["可选图表中的 id"] }`;
 }

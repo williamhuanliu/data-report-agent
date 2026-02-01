@@ -5,7 +5,22 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "../components/ThemeProvider";
-import { Alert, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../components/ui";
+import {
+  Alert,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "../components/ui";
 import { OutlineEditor } from "../create/components/OutlineEditor";
 import { ThemeSelector } from "../create/components/ThemeSelector";
 import { ModelSelector } from "../create/components/ModelSelector";
@@ -70,6 +85,9 @@ export default function DashboardPage() {
   const [sidebarHoverId, setSidebarHoverId] = useState<string | null>(null);
   const [cardMenuId, setCardMenuId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deleteConfirmTitle, setDeleteConfirmTitle] = useState<string | null>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [sidebarSearchQuery, setSidebarSearchQuery] = useState("");
@@ -148,12 +166,19 @@ export default function DashboardPage() {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  async function handleDelete(id: string, titleText: string) {
-    if (!confirm(`确定要删除「${titleText}」吗？`)) return;
+  function openDeleteConfirm(id: string, titleText: string) {
     setCardMenuId(null);
-    setDeletingId(id);
+    setDeleteConfirmId(id);
+    setDeleteConfirmTitle(titleText);
+    setDeleteConfirmOpen(true);
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deleteConfirmId) return;
+    const idToDelete = deleteConfirmId;
+    setDeletingId(idToDelete);
     try {
-      const res = await fetch(`/api/reports/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/reports/${idToDelete}`, { method: "DELETE" });
       if (!res.ok) throw new Error("删除失败");
       await fetchReports();
     } catch {
@@ -471,25 +496,54 @@ export default function DashboardPage() {
                           </span>
                         </Link>
                         {sidebarHoverId === report.id && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setCardMenuId(
-                                cardMenuId === report.id ? null : report.id
-                              );
-                            }}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full text-[#5f6368] dark:text-[#9aa0a6] hover:bg-[#c8d3de] dark:hover:bg-[#484a4d] transition-colors"
-                          >
-                            <svg
-                              className="w-5 h-5"
-                              fill="currentColor"
-                              viewBox="0 0 24 24"
+                          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                openDeleteConfirm(report.id, report.title);
+                              }}
+                              disabled={deletingId === report.id}
+                              className="w-8 h-8 flex items-center justify-center rounded-full text-[#5f6368] dark:text-[#9aa0a6] hover:bg-[#fce8e6] dark:hover:bg-[#4a2c2a] hover:text-[#c5221f] transition-colors disabled:opacity-50"
+                              title="删除会话"
+                              aria-label="删除会话"
                             >
-                              <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                            </svg>
-                          </button>
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                                />
+                              </svg>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setCardMenuId(
+                                  cardMenuId === report.id ? null : report.id
+                                );
+                              }}
+                              className="w-8 h-8 flex items-center justify-center rounded-full text-[#5f6368] dark:text-[#9aa0a6] hover:bg-[#c8d3de] dark:hover:bg-[#484a4d] transition-colors"
+                              aria-label="更多操作"
+                            >
+                              <svg
+                                className="w-5 h-5"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                              </svg>
+                            </button>
+                          </div>
                         )}
                         {cardMenuId === report.id && (
                           <div
@@ -543,7 +597,7 @@ export default function DashboardPage() {
                             <button
                               type="button"
                               onClick={() =>
-                                handleDelete(report.id, report.title)
+                                openDeleteConfirm(report.id, report.title)
                               }
                               disabled={deletingId === report.id}
                               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#c5221f] hover:bg-[#fce8e6] dark:hover:bg-[#4a2c2a] disabled:opacity-50"
@@ -561,7 +615,7 @@ export default function DashboardPage() {
                                   d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
                                 />
                               </svg>
-                              {deletingId === report.id ? "删除中…" : "删除"}
+                              {deletingId === report.id ? "删除中…" : "删除会话"}
                             </button>
                           </div>
                         )}
@@ -1084,6 +1138,35 @@ export default function DashboardPage() {
           )}
         </main>
       </div>
+
+      {/* 删除确认弹窗（shadcn AlertDialog） */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={(open: boolean) => {
+        if (!open) {
+          setDeleteConfirmOpen(false);
+          setDeleteConfirmId(null);
+          setDeleteConfirmTitle(null);
+        }
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>删除会话</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteConfirmTitle
+                ? `确定要删除「${deleteConfirmTitle}」吗？此操作不可恢复。`
+                : "确定要删除该会话吗？此操作不可恢复。"}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={!!deletingId}
+            >
+              {deletingId ? "删除中…" : "删除"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

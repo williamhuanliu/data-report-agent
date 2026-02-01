@@ -10,6 +10,7 @@ import {
   RecommendationSection,
 } from "@/app/components/report/InsightSection";
 import { ChartSection } from "@/app/components/report/ChartSection";
+import type { Report, OutlineSectionType } from "@/lib/types";
 
 interface ReportPageProps {
   params: Promise<{ id: string }>;
@@ -71,61 +72,178 @@ export default async function ReportPage({
       <main className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 pb-20 print:py-0 print:bg-white print:text-black">
         <ReportHeader report={report} />
 
-        {/* 关键指标 */}
-        {report.analysis.keyMetrics.length > 0 && (
-          <section className="mt-8" aria-labelledby="key-metrics-heading">
-            <h2
-              id="key-metrics-heading"
-              className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2"
-            >
-              <span className="w-8 h-8 rounded-md bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-amber-600 dark:text-amber-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                  />
-                </svg>
-              </span>
-              关键指标
-            </h2>
-            <MetricGrid metrics={report.analysis.keyMetrics} />
-          </section>
+        {report.outline?.sections ? (
+          <ReportContentByOutline report={report} />
+        ) : (
+          <ReportContentDefault report={report} />
         )}
-
-        {/* 图表：多图表时逐条展示，单图表时展示一个 */}
-        {report.analysis.charts && report.analysis.charts.length > 0 ? (
-          report.analysis.charts.map((chart, index) => (
-            <ChartSection
-              key={index}
-              data={chart.data}
-              title={chart.title}
-              chartType={chart.chartType}
-            />
-          ))
-        ) : report.analysis.chartData &&
-          report.analysis.chartData.length > 0 ? (
-          <ChartSection
-            data={report.analysis.chartData}
-            chartType={report.analysis.chartType}
-          />
-        ) : null}
-
-        {/* 核心洞察 */}
-        <InsightSection insights={report.analysis.insights} />
-
-        {/* 行动建议 */}
-        <RecommendationSection
-          recommendations={report.analysis.recommendations}
-        />
       </main>
     </div>
+  );
+}
+
+function MetricsBlock({ report }: { report: Report }) {
+  if (!report.analysis.keyMetrics.length) return null;
+  return (
+    <section className="mt-8" aria-labelledby="key-metrics-heading">
+      <h2
+        id="key-metrics-heading"
+        className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2"
+      >
+        <span className="w-8 h-8 rounded-md bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+          <svg
+            className="w-4 h-4 text-amber-600 dark:text-amber-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+            />
+          </svg>
+        </span>
+        关键指标
+      </h2>
+      <MetricGrid metrics={report.analysis.keyMetrics} />
+    </section>
+  );
+}
+
+function ChartsBlock({
+  report,
+  chartIndex = 0,
+}: {
+  report: Report;
+  chartIndex?: number;
+}) {
+  if (report.analysis.charts && report.analysis.charts.length > 0) {
+    const chart = report.analysis.charts[chartIndex];
+    if (!chart) return null;
+    return (
+      <ChartSection
+        data={chart.data}
+        title={chart.title}
+        chartType={chart.chartType}
+      />
+    );
+  }
+  if (
+    report.analysis.chartData &&
+    report.analysis.chartData.length > 0 &&
+    chartIndex === 0
+  ) {
+    return (
+      <ChartSection
+        data={report.analysis.chartData}
+        chartType={report.analysis.chartType}
+      />
+    );
+  }
+  return null;
+}
+
+function ReportContentByOutline({ report }: { report: Report }) {
+  const enabled = report.outline!.sections.filter((s) => s.enabled);
+  const firstSectionIsSummary = enabled[0]?.type === "summary";
+  let chartIndex = 0;
+  let metricsRendered = false;
+  let insightRendered = false;
+  let recommendationRendered = false;
+  return (
+    <>
+      {enabled.map((section, index) => {
+        const key = section.id;
+        switch (section.type as OutlineSectionType) {
+          case "metrics":
+            if (metricsRendered) {
+              return (
+                <section key={key} className="mt-8" aria-labelledby={`outline-${section.id}`}>
+                  <h2 id={`outline-${section.id}`} className="text-xl font-semibold text-foreground mb-2">
+                    {section.title}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">见上方关键指标。</p>
+                </section>
+              );
+            }
+            metricsRendered = true;
+            return <MetricsBlock key={key} report={report} />;
+          case "chart":
+            return (
+              <ChartsBlock
+                key={key}
+                report={report}
+                chartIndex={chartIndex++}
+              />
+            );
+          case "insight":
+            if (insightRendered) {
+              return (
+                <section key={key} className="mt-8" aria-labelledby={`outline-${section.id}`}>
+                  <h2 id={`outline-${section.id}`} className="text-xl font-semibold text-foreground mb-2">
+                    {section.title}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">见上方核心洞察。</p>
+                </section>
+              );
+            }
+            insightRendered = true;
+            return (
+              <InsightSection key={key} insights={report.analysis.insights} />
+            );
+          case "recommendation":
+            if (recommendationRendered) {
+              return (
+                <section key={key} className="mt-8" aria-labelledby={`outline-${section.id}`}>
+                  <h2 id={`outline-${section.id}`} className="text-xl font-semibold text-foreground mb-2">
+                    {section.title}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">见上方行动建议。</p>
+                </section>
+              );
+            }
+            recommendationRendered = true;
+            return (
+              <RecommendationSection
+                key={key}
+                recommendations={report.analysis.recommendations}
+              />
+            );
+          case "summary":
+            if (index === 0 && firstSectionIsSummary) {
+              return (
+                <section key={key} className="mt-8" aria-labelledby={`outline-${section.id}`}>
+                  <h2
+                    id={`outline-${section.id}`}
+                    className="text-xl font-semibold text-foreground mb-2"
+                  >
+                    {section.title}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">见上方摘要。</p>
+                </section>
+              );
+            }
+            return null;
+          default:
+            return null;
+        }
+      })}
+    </>
+  );
+}
+
+function ReportContentDefault({ report }: { report: Report }) {
+  return (
+    <>
+      <MetricsBlock report={report} />
+      <ChartsBlock report={report} />
+      <InsightSection insights={report.analysis.insights} />
+      <RecommendationSection
+        recommendations={report.analysis.recommendations}
+      />
+    </>
   );
 }

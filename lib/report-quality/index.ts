@@ -9,33 +9,40 @@ export {
   metricItemSchema,
   reportChartSchema,
   chartDataItemSchema,
-} from './schema';
-export type { ParsedAnalysisPayload } from './schema';
+} from "./schema";
+export type { ParsedAnalysisPayload } from "./schema";
 
-export { normalizeAnalysisResult } from './normalize';
+export { normalizeAnalysisResult } from "./normalize";
 
 export {
   checkCitations,
   logCitationWarnings,
   type CitationCheckOptions,
   type CitationCheckResult,
-} from './citation-check';
+} from "./citation-check";
 
 export {
   checkCrossFileInsight,
   logCrossFileWarning,
   type CrossFileCheckResult,
-} from './cross-file-check';
+} from "./cross-file-check";
 
 export {
   computeQualityScore,
   logQualityScore,
   type QualityScoreResult,
   type QualityScoreDimensions,
-} from './quality-score';
+} from "./quality-score";
 
 export {
   checkNoRecordWording,
   logNoRecordWarnings,
   type NoRecordCheckResult,
-} from './no-record-check';
+} from "./no-record-check";
+
+export {
+  checkHtmlQuality,
+  checkNoRecordWordingInHtml,
+  logHtmlQualityWarnings,
+  type HtmlQualityResult,
+} from "./html-quality-check";

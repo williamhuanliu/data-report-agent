@@ -224,32 +224,58 @@ export default function DashboardPage() {
     setUploadedFiles((prev) => prev.filter((f) => f.id !== id));
   }, []);
 
-  // 从单页「生成」直接提交：支持多文件，综合分析
+  // 从单页「生成」直接提交：支持仅描述、仅文件、或描述+文件
   const handleStartFromCreatePage = async () => {
-    if (uploadedFiles.length === 0) return;
+    const hasFiles = uploadedFiles.length > 0;
+    const hasIdea = idea.trim().length > 0;
+    if (!hasFiles && !hasIdea) return;
     setError(null);
     setIsLoading(true);
-    setMode("import");
+    const abort = new AbortController();
+    let timeoutId: ReturnType<typeof setTimeout> | undefined = setTimeout(() => abort.abort(), 120_000); // 120s 超时
     try {
+      const payload: {
+        mode: CreateMode;
+        idea?: string;
+        dataList?: ParsedData[];
+        title?: string;
+        model?: string;
+      } = {
+        mode: hasFiles ? "import" : "generate",
+        title: title.trim() || undefined,
+        model: selectedModel,
+      };
+      if (hasIdea) payload.idea = idea.trim();
+      if (hasFiles) payload.dataList = uploadedFiles.map((f) => f.parsedData);
+      setMode(payload.mode);
+
       const response = await fetch("/api/generate-outline", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mode: "import",
-          idea: idea.trim() || undefined,
-          dataList: uploadedFiles.map((f) => f.parsedData),
-          title: title.trim() || undefined,
-          model: selectedModel,
-        }),
+        body: JSON.stringify(payload),
+        signal: abort.signal,
       });
-      const result = await response.json();
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = undefined;
+      let result: { outline?: ReportOutline; error?: string };
+      try {
+        result = await response.json();
+      } catch {
+        throw new Error(response.ok ? "响应解析失败" : "生成大纲失败");
+      }
       if (!response.ok) throw new Error(result.error || "生成大纲失败");
+      if (!result.outline) throw new Error("未返回大纲");
       setOutline(result.outline);
-      if (result.outline?.title) setTitle(result.outline.title);
+      if (result.outline.title) setTitle(result.outline.title);
       goToStep("outline");
     } catch (err) {
-      setError(getFriendlyErrorMessage(err));
+      if (err instanceof Error && err.name === "AbortError") {
+        setError("请求超时，请检查网络或稍后重试");
+      } else {
+        setError(getFriendlyErrorMessage(err));
+      }
     } finally {
+      if (timeoutId) clearTimeout(timeoutId);
       setIsLoading(false);
     }
   };
@@ -300,7 +326,7 @@ export default function DashboardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mode,
-          idea: mode === "generate" ? idea : undefined,
+          idea: idea.trim() ? idea : undefined,
           pastedContent: mode === "paste" ? pastedContent : undefined,
           dataList: mode === "import" && uploadedFiles.length > 0 ? uploadedFiles.map((f) => f.parsedData) : undefined,
           outline,
@@ -1028,7 +1054,7 @@ export default function DashboardPage() {
                         <button
                           type="button"
                           onClick={handleStartFromCreatePage}
-                          disabled={uploadedFiles.length === 0 || isLoading}
+                          disabled={(uploadedFiles.length === 0 && !idea.trim()) || isLoading}
                           className="w-10 h-10 rounded-full flex items-center justify-center bg-[#1f1f1f] dark:bg-[#e3e3e3] text-white dark:text-[#1f1f1f] disabled:bg-[#e8eaed] dark:disabled:bg-[#3c4043] disabled:text-[#9aa0a6] disabled:cursor-not-allowed transition-colors"
                         >
                           {isLoading ? (

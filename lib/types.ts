@@ -81,6 +81,8 @@ export interface CreateWizardState {
 export interface ReportMeta {
   /** 仅可引用的统计清单（10～20 条），编辑时约束 AI 不编造数字 */
   citationList?: string[];
+  /** 质量检查警告（如无记录表述等），不阻断生成，供人工复检 */
+  qualityWarnings?: string[];
 }
 
 export interface Report {
@@ -93,8 +95,15 @@ export interface Report {
   openrouterModel?: string;
   theme?: string;
   outline?: ReportOutline;
+  /** 用户原始描述/意图（创建时填写，供展示与按意图重生成） */
+  userIdea?: string;
   /** 报告元数据（如引用清单，供编辑章节时注入） */
   meta?: ReportMeta;
+  /**
+   * 大模型生成的报告正文 HTML。
+   * 若存在则前端直接渲染此 HTML（并在占位符处注入图表），不再按 outline + analysis 拆节渲染。
+   */
+  contentHtml?: string;
 }
 
 export interface ParsedData {

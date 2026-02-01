@@ -106,7 +106,7 @@ function CreatePageContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           mode,
-          idea: mode === 'generate' ? idea : undefined,
+          idea: idea.trim() ? idea : undefined,
           pastedContent: mode === 'paste' ? pastedContent : undefined,
           data: mode === 'import' ? parsedData : undefined,
           title,
@@ -143,7 +143,7 @@ function CreatePageContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           mode,
-          idea: mode === 'generate' ? idea : undefined,
+          idea: idea.trim() ? idea : undefined,
           pastedContent: mode === 'paste' ? pastedContent : undefined,
           data: mode === 'import' ? parsedData : undefined,
           outline,

@@ -4,9 +4,9 @@
  * 仅用于日志/调试或后续 A/B，不参与是否重试的自动决策
  */
 
-import type { AnalysisResult, DataAnalysis } from '@/lib/types';
-import { checkCitations } from './citation-check';
-import { checkCrossFileInsight } from './cross-file-check';
+import type { AnalysisResult, DataAnalysis } from "@/lib/types";
+import { checkCitations } from "./citation-check";
+import { checkCrossFileInsight } from "./cross-file-check";
 
 export interface QualityScoreDimensions {
   /** 引用覆盖：有 citationList 时，1 - (警告数/总提及数)，否则 1 */
@@ -50,15 +50,27 @@ export function computeQualityScore(
   };
 
   let totalScore = 0;
-  const weights = { citation: 30, insight: 25, recommendation: 20, crossFile: 15, metrics: 10 };
+  const weights = {
+    citation: 30,
+    insight: 25,
+    recommendation: 20,
+    crossFile: 15,
+    metrics: 10,
+  };
 
   if (citationList && citationList.length > 0) {
     const { warnings } = checkCitations(analysis, citationList);
     const totalMentions =
       analysis.keyMetrics.filter((m) => m.value).length +
-      analysis.insights.reduce((acc, s) => acc + (s.match(/[\d,]+\.?\d*[亿万%％]|[\d,]+\.?\d*/g)?.length ?? 0), 0);
+      analysis.insights.reduce(
+        (acc, s) =>
+          acc + (s.match(/[\d,]+\.?\d*[亿万%％]|[\d,]+\.?\d*/g)?.length ?? 0),
+        0
+      );
     dimensions.citationCoverage =
-      totalMentions === 0 ? 1 : Math.max(0, 1 - warnings.length / Math.max(totalMentions, 1));
+      totalMentions === 0
+        ? 1
+        : Math.max(0, 1 - warnings.length / Math.max(totalMentions, 1));
     totalScore += dimensions.citationCoverage * weights.citation;
   } else {
     totalScore += weights.citation;
@@ -103,9 +115,9 @@ export function logQualityScore(
 ): void {
   const result = computeQualityScore(analysis, citationList, dataAnalysis);
   console.info(
-    '[report-quality] quality-score:',
+    "[report-quality] quality-score:",
     result.score,
-    'dimensions:',
+    "dimensions:",
     result.dimensions
   );
 }

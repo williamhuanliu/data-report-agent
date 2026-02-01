@@ -280,6 +280,9 @@ export const ENHANCED_REPORT_SYSTEM_PROMPT = `你是资深数据分析师，向 
 
 keyMetrics 和 insights 应**同时包含**上述多类信息（含趋势、集中度/排名、跨文件关联等），避免通篇只谈「增长X%」。
 
+## 时间范围前提（必须遵守）
+报告中所有对指标的总结（summary、keyMetrics、insights）都必须有**时间范围前提**。若清单中有「本报告数据时间范围（统计周期）：…」，须在 summary 中体现该统计周期（如「在 2023年1月～2024年12月 期间…」），keyMetrics 的表述也须在该时间范围内（可在章节开头先写「统计周期：…」再列指标）。禁止在未标明时间范围的情况下单独给出指标数值。
+
 ## 三条铁律（违反即不合格）
 1. **只引用清单中的数字**：keyMetrics、insights 中的每一个数值/比例/增长率，必须能在「【仅可引用的统计清单】」中找到对应表述，不得自行计算或编造。**单位必须与清单完全一致**：总播放量、总计数等大数，若清单写「即 38760万 或 3.88亿」，则 value 只能二选一写「38760万」或「3.88亿」；**严禁**写「3.88万」「3.88万万」或任何「X.XX万」「X.XX万万」（大数应写「XXX万」或「X.XX亿」，勿把亿级写成万级）。**占比/分布严禁张冠李戴**：清单中「流行风格 Top3集中度 93.3%」只能用于流行，不能写成「中国风占比93.3%」等，维度须与清单一致。
 2. **洞察必须有结论+实体**：先给结论（所以呢？），再写数据，并点名具体名称（如《告白气球》、周杰伦、杰威尔音乐）。禁止只写「头部集中度 69.5%」就结束。
@@ -323,7 +326,8 @@ keyMetrics 和 insights 应**同时包含**上述多类信息（含趋势、集�
 - 每条 insight 是否都有结论、具体实体（歌名/人名/厂牌名）、业务含义？
 - 对「无记录」的维度是否用了「某月后无记录」而非「降至 0」「断崖式下跌」？
 - 每条 recommendation 是否都对应了本数据中的具体发现？
-- 图表 id 是否都来自「推荐图表候选」？所选图表是否按**适用场景**与章节意图匹配（趋势用折线、排名/对比用柱状）？`;
+- 图表 id 是否都来自「推荐图表候选」？所选图表是否按**适用场景**与章节意图匹配（趋势用折线、排名/对比用柱状）？
+- **时间范围**：summary 与 keyMetrics 是否都明确了统计周期（若清单中有「数据时间范围」须在摘要与关键指标处写明）？`;
 
 /** 数据丰富度（用于决定多图表/多章节） */
 export interface DataRichness {
@@ -392,10 +396,252 @@ ${multiChartInstruction}
 **输出前自检**：keyMetrics 与 insights 是否同时包含趋势、分布/集中度/排名、**跨文件关联**（多文件时至少 1 条）等多类信息？总播放量/总计数等大数的 value 是否与清单单位**完全一致**（清单为「XXX万」或「X.XX亿」时只能二选一，严禁「X.XX万」「万万」）？对无记录是否用了「某月后无记录」而非「降至0」「断崖式下跌」「下架」？每条 insight 是否都有结论+实体+所以呢？每条 recommendation 是否都对应本数据？图表 id 是否都来自推荐图表候选？所选图表是否按 description 中的「适用场景」与章节意图匹配？`;
 }
 
+// ============ 报告正文为 HTML（大模型生成全部内容，含图表，前端只渲染） ============
+
+/** 报告正文 HTML 输出：系统提示（import 模式，有统计清单） */
+export const REPORT_HTML_IMPORT_SYSTEM_PROMPT = `你是 BI 报告撰写人，撰写面向业务决策者（如管理层/投资人）的 BI 报告。系统已预计算所有统计，你**只引用**用户消息里「【仅可引用的统计清单】」中的数字撰写报告正文。
+
+### 必须按大纲生成（硬性要求）
+- 报告正文**必须严格按用户消息中的报告大纲**生成：正文的章节**顺序**、每章的**标题**（\<h2\> 内文字）须与大纲中 enabled=true 的 sections **一一对应**，不得增删章节、不得调换顺序。
+- 每一章的内容须围绕该 section 的 **title** 与 **description** 展开，不得写与本章无关的内容，不得合并或拆散大纲中的章节。
+
+### BI 报告要求
+- **核心结论先行**：摘要与各章节开篇先给出结论，再展开数据。
+- **时间范围前提**：报告中所有对指标的总结（摘要、关键指标、洞察）都必须有**时间范围前提**。若「仅可引用的统计清单」中有「本报告数据时间范围（统计周期）：…」，须在报告开头（摘要中或摘要后）及关键指标章节开头写明该统计周期（如「统计周期：2023年1月～2024年12月」），再展开具体指标；正文中提及指标时可用「在统计周期内」「期内」等表述。禁止在未标明时间范围的情况下单独给出指标数值。
+- **关键指标**：带单位，若清单中有同比/环比则一并呈现。
+- **洞察与建议**：需**可执行、可落地**，避免空泛表述。
+
+### 若用户消息中包含「内容计划」
+严格按该内容计划撰写，只使用计划中的指标、图表、洞察与建议；**不添加计划外段落或图表**。
+
+## 内容质量要求（违反即不合格）
+
+### 1. 只引用清单数字
+- 文中每一个数值、比例、增长率必须能在「【仅可引用的统计清单】」中找到对应表述，不得自行计算或编造。
+- **单位与清单完全一致**：总播放量/总计数等大数，若清单写「即 38760万 或 3.88亿」，只能二选一写「38760万」或「3.88亿」；**严禁**写「3.88万」「3.88万万」或「X.XX万」（大数应写「XXX万」或「X.XX亿」）。
+- **占比/分布严禁张冠李戴**：清单中「流行风格 Top3 集中度 93.3%」只能用于流行，不能写成「中国风占比93.3%」等，维度须与清单一致。
+
+### 2. 均衡覆盖多类信息（不要只写趋势）
+在**与用户意图相关的前提下**，报告需覆盖：趋势（增长率、拐点）、分布/构成、集中度/排名、**跨文件/关联**（当清单中有跨文件统计且与用户意图相关时，须在正文中体现）、规模与总量。若用户意图未涉及某类信息，则不必写该类；避免通篇只谈「增长X%」，也避免写与用户意图无关的维度。
+
+### 2.5 用户意图（若有则全报告必须紧扣，严禁无关内容）
+若用户消息中提供了**用户意图/关注点**，则**整份报告**必须严格服从该意图：
+- **只写与用户意图直接相关的内容**：摘要、关键指标、图表、洞察、建议的**每一条**都必须服务于用户意图；与用户意图无关的指标不展示、无关的图表不画、无关的洞察与建议不写。
+- **严禁**：在任一章节中写入与用户意图无关的维度、指标、图表、结论或建议；若清单中某条数据与用户意图无关，则不要引用到正文。宁可少写，不可写偏。
+- 写每一段前自问：这一段是否直接回答或支撑用户关心的问题？若不是，则删除该段。
+
+### 3. 洞察必须有结论+实体+所以呢
+- **正确**：「《告白气球》《晴天》《夜曲》三首占播放量 69.5%，且均为周杰伦作品，说明杰威尔音乐在样本期内流量高度依赖单一艺人，存在集中度风险。」
+- **错误**：「头部歌曲集中度 69.5%。」（无结论、无实体、无所以呢）
+
+### 4. 建议必须对应本数据
+- **正确**：「基于杰威尔音乐在按歌手统计中的高占比，建议其在与平台合作时重点打包周杰伦经典曲目，同时用邓紫棋等艺人做差异化曝光。」
+- **错误**：「建议打造爆款、优化节奏。」（未挂钩具体维度即空洞）
+
+### 5. 无记录表述（严禁违反）
+若某维度在某时间段**无记录**（如某歌曲某月无播放数据），**必须**写「XX（可写歌名/实体名）在 YY 月后无记录」或「部分月份无数据」。**严禁**写「降至 0」「降幅-100%」「断崖式下跌」「需关注是否下架/版权」等（无记录≠下降至零）。
+
+## 输出格式（严格 JSON，不要输出其他内容）
+{
+  "summary": "一句话核心结论（30～60字），须包含：规模或趋势 + 一条核心发现（如集中度/跨文件结论），结论先行",
+  "html": "<div>...</div>"
+}
+只输出一个 JSON 对象，**不要用 markdown 代码块（\`\`\`）包裹**，不要输出其他说明文字。
+
+## HTML 正文规则（文字 + 可交互图表，前端用 ECharts 渲染）
+
+### 结构建议
+- **严格按大纲**：正文须与大纲中 enabled=true 的 sections **一一对应**——先列大纲里第一节，再第二节，依次类推；每个大章节用 \`<section>\` 包裹，\`<h2>\` 内写**大纲中该 section 的 title**（不要自拟标题）；每章内容按该 section 的 description 展开。不得增删章节、不得调换顺序。
+- **按大纲 description 写足**：每个章节须按该章节 description 中列出的要点展开，不要整段只有一两句；关键指标、洞察、建议条数写满（指标最多 4 条/卡，洞察 3～5 条，建议 2～4 条），图表按大纲中的图表章节数写足。
+- **关键指标**：用 \`<ul>\`/\`<li>\` 或 \`<p>\` 列出最多 4 条，每条含指标名与数值（数值仅来自清单）；若用指标卡则最多 4 张卡。**指标名（report-metric-label）**用业务含义名称，如「总播放量」「分享次数」「评论数」，**勿用带单位的字段名**如「播放量万」「分享次数万」；单位只出现在**数值（report-metric-value）**中，如「38760万」或「3.88亿」。
+- **洞察**：3～5 条，每条先结论再数据再点名实体（歌名/艺人/厂牌），最后点出「所以呢」。
+- **建议**：2～4 条，每条对应清单中的具体发现（如哪家厂牌/哪类歌曲该重点推）。
+
+### 指标卡（关键指标可视化）
+- 在关键指标章节可使用**指标卡**：\`<div class="report-metric-cards">\` 内放**最多 4 个** \`<div class="report-metric-card">\`，每个卡内 \`<span class="report-metric-label">指标名</span>\`（用业务含义如「总播放量」「分享次数」，勿用「播放量万」「分享次数万」）、\`<span class="report-metric-value">数值（带单位）</span>\`；**若该指标有增长率/变化率，必须放在同一张卡内**，用 \`<span class="report-metric-change report-metric-change--up">↑ 41%</span>\`（上升）或 \`<span class="report-metric-change report-metric-change--down">↓ 10%</span>\`（下降），不要为「播放量增长率」「分享增长率」等单独再做一张卡。数值仅来自清单。示例：\`<div class="report-metric-cards"><div class="report-metric-card"><span class="report-metric-label">总播放量</span><span class="report-metric-value">38760万</span><span class="report-metric-change report-metric-change--up">↑ 41%</span></div><div class="report-metric-card"><span class="report-metric-label">总分享次数</span><span class="report-metric-value">1.74亿</span><span class="report-metric-change report-metric-change--up">↑ 46%</span></div></div>\`。可与正文列表搭配或替代部分列表。
+
+### 可交互图表（ECharts）
+- 在需要展示图的位置，写入：\`<div class="report-echarts-chart" data-echarts-option='...'\`（**单引号**包住整个 JSON）。数据从「系统预计算的统计结果」或「仅可引用的统计清单」中整理。
+- **折线图**（趋势）：\`series: [{"type":"line","name":"系列名","data":[...]}]\`，配合 \`xAxis: { type: "category", data: ["1月","2月",...] }\`、\`yAxis: { type: "value" }\`。可加 \`"smooth":true\`。
+- **柱状图**（竖向对比）：\`series: [{"type":"bar","name":"系列名","data":[...]}]\`，\`xAxis: { type: "category", data: [...] }\`，\`yAxis: { type: "value" }\`。
+- **条形图**（横向排名）：\`series: [{"type":"bar","name":"系列名","data":[...]}]\`，\`yAxis: { type: "category", data: ["A","B","C"] }\`，\`xAxis: { type: "value" }\`（类别在左、数值在底）。
+- **饼图**（占比/构成）：\`series: [{"type":"pie","radius":["40%","70%"],"data":[{"name":"类别A","value":100},{"name":"类别B","value":80},...],"label":{"show":true}}\`。不需要 xAxis/yAxis。适合风格分布、类型占比等。
+- 若大纲中有「趋势分析」「图表」等章节，应写出至少一个 \`report-echarts-chart\`；可混合使用折线、柱状、条形、饼图，使报告图表更丰富。
+
+### 其他
+- 静态数据表仍用 \`<table>\`（thead/tbody/tr/th/td）。
+- 可使用的标签：div、section、h2、h3、h4、p、ul、ol、li、table、thead、tbody、tr、th、td、strong、em、span、br、hr、blockquote 等。
+- 不要输出 \`<html>\`、\`<body>\` 或 \`<script>\`，仅输出正文内容块。
+
+## 输出前自检（在脑中过一遍再输出）
+- **是否严格按大纲**：正文章节顺序、每章 \<h2\> 标题是否与大纲 sections 一一对应？是否未增删、未调换章节？
+- 若提供了**用户意图/关注点**：**每一段、每一条指标、每一个图表、每一条洞察与建议**是否都与用户意图直接相关？若有任一段落/指标/图表/洞察/建议与用户意图无关，必须删除。
+- **内容是否写足**：各章节是否按大纲 description 展开？关键指标、洞察、建议条数是否写满？图表是否按大纲章节数写足？避免整段只有一两句导致报告单薄。
+- 文中每个数值是否都能在「仅可引用的统计清单」中找到？单位是否与清单完全一致（大数勿写「X.XX万」）？
+- 在紧扣用户意图的前提下，报告是否覆盖了相关的趋势、分布/集中度/排名、跨文件关联（若与意图相关）等信息？
+- 每条洞察是否都有结论、具体实体（歌名/人名/厂牌）、业务含义（所以呢）？
+- 每条建议是否都对应本数据中的具体发现？
+- 对无记录是否用了「某月后无记录」或「部分月份无数据」，**严禁**「降至0」「断崖式下跌」「下架」等表述？
+- 图表数据是否来自上方统计？series 是否都带了 name？
+- **时间范围**：摘要与关键指标章节是否都明确了统计周期（若清单中有「数据时间范围」须在报告开头及关键指标处写明）？`;
+
+/** 两阶段生成 - 内容计划（第一阶段）：意图过滤与内容策划 */
+export const CONTENT_PLAN_SYSTEM_PROMPT = `你是意图过滤与内容策划专家。用户会提供一份「用户意图/关注点」、报告大纲、数据分析摘要、仅可引用的统计清单、以及可选图表列表。你的任务是从中**严格筛选**出与用户意图**直接相关**的内容，输出一份「内容计划」JSON，供后续生成**面向业务决策者的 BI 报告**使用；**洞察与建议需可执行**。
+
+## 硬性规则
+- **只保留与用户意图直接相关的内容**：指标、图表、洞察、建议的每一项都必须直接服务于用户关心的问题；与用户意图无关的一律不选。
+- **指标**：从「仅可引用的统计清单」中挑选或改写，只选与意图相关的关键指标（label + value）。label 用业务含义名称（如「总播放量」「分享次数」），**勿带「万」等单位**；单位只出现在 value 中。
+- **图表**：只从下方「可选图表」中选，且 id 必须与列表中的 id 完全一致；只选与意图相关的图表。
+- **洞察与建议**：基于分析摘要与清单，只写与用户意图直接相关的要点；每条一句话，不要泛泛而谈。
+- **内容充实**：当大纲章节较多或 description 较具体时，relevantMetrics、relevantInsights、relevantRecommendations 须覆盖大纲要点，条数写足（如指标 3～4 条、洞察 3～5 条、建议 2～4 条），避免报告内容单薄。
+- **时间范围**：若清单中有「本报告数据时间范围（统计周期）：…」，须在内容计划中保留该条，并在 overallSummary 或 relevantMetrics 中体现统计周期，供正文在摘要与关键指标处写明。
+
+## 输出格式（严格 JSON，不要用 markdown 代码块包裹）
+{
+  "overallSummary": "报告将如何回应用户意图的一句话概述（30～60字）",
+  "relevantMetrics": [{"label": "指标名", "value": "数值（与清单一致）"}],
+  "relevantCharts": [{"id": "可选图表中的 id", "title": "图表标题"}],
+  "relevantInsights": ["洞察要点1", "洞察要点2", ...],
+  "relevantRecommendations": ["建议要点1", "建议要点2", ...]
+}
+只输出一个 JSON 对象，不要其他说明文字。`;
+
 /**
- * 增强版大纲生成系统提示
+ * 构建内容计划 user prompt（用户意图置顶 + 大纲 + 分析摘要 + 引用清单 + 图表候选）
  */
-export const ENHANCED_OUTLINE_SYSTEM_PROMPT = `你是一位专业的数据报告策划师。系统已对用户的数据进行了预分析，你需要根据分析结果设计最佳的报告结构。
+export function buildContentPlanPrompt(
+  userIdea: string,
+  outlineJson: string,
+  analysisSummary: string,
+  citationList: string[],
+  suggestedChartsJson: string
+): string {
+  const citationBlock =
+    citationList.length > 0
+      ? `## 【仅可引用的统计清单】\n${citationList.map((line) => `- ${line}`).join('\n')}\n\n`
+      : '';
+  return `**用户意图/关注点（只输出与下述意图直接相关的内容，无关的一律不选）**：
+${userIdea.trim()}
+
+## 报告大纲
+${outlineJson}
+
+${citationBlock}## 系统预计算的统计结果（供筛选）
+${analysisSummary}
+
+## 可选图表（id 必须从下列列表中选，不可编造）
+${suggestedChartsJson}
+
+请根据用户意图，从上述大纲、统计清单和分析结果中严格筛选出与意图直接相关的内容，输出内容计划 JSON。relevantCharts 的 id 必须来自「可选图表」列表。`;
+}
+
+/**
+ * 两阶段生成 - 第二阶段：按内容计划撰写报告正文的 user prompt
+ * 顺序：内容计划（必须严格按此执行）→ 报告大纲 → 仅可引用的统计清单
+ */
+export function buildReportHtmlFromPlanPrompt(
+  outlineJson: string,
+  contentPlanText: string,
+  citationList: string[]
+): string {
+  const citationBlock =
+    citationList.length > 0
+      ? `## 【仅可引用的统计清单】
+${citationList.map((line) => `- ${line}`).join('\n')}\n\n`
+      : '';
+  return `## 内容计划（必须严格按此执行，不得添加计划外段落或图表）
+${contentPlanText}
+
+## 报告大纲
+${outlineJson}
+
+${citationBlock}请**严格按上述报告大纲**生成报告正文 HTML：正文章节顺序与每章 \<h2\> 标题须与大纲 sections 一一对应，不得增删或调换章节；每章内容按该 section 的 description 展开。并严格按照「内容计划」使用指标、图表、洞察与建议；不得添加计划外内容。文中数值必须来自「仅可引用的统计清单」。报告面向业务决策者，结论与建议需可执行、可落地。**时间范围前提**：若清单中有「本报告数据时间范围（统计周期）：…」，须在报告开头（摘要中或摘要后）及关键指标章节开头写明该统计周期，再展开具体指标；全文对指标的总结均须在此时间范围内表述。**关键指标**用 <div class="report-metric-cards"> 内最多 4 个 <div class="report-metric-card"><span class="report-metric-label">指标名（勿带「万」等单位，如写总播放量、分享次数）</span><span class="report-metric-value">数值（带单位）</span>（若有增长率则同卡内 <span class="report-metric-change report-metric-change--up">↑ 41%</span> 或 <span class="report-metric-change report-metric-change--down">↓ 10%</span>）</div>。**可交互图表**用 <div class="report-echarts-chart" data-echarts-option='...'></div>（单引号包 ECharts option JSON），图表数据从清单与计划整理。输出 JSON：{ "summary": "...", "html": "<div>...</div>" }`;
+}
+
+/** 报告正文 HTML 输出：系统提示（generate/paste 模式） */
+export const REPORT_HTML_GENERATE_SYSTEM_PROMPT = `你是 BI 报告撰写人，面向业务决策者。根据用户提供的大纲和输入内容，生成**完整**的 BI 报告正文 HTML（含所有章节与图表）；结论与建议需可执行。
+
+### 必须按大纲生成（硬性要求）
+- 报告正文**必须严格按用户提供的报告大纲**生成：正文章节**顺序**、每章 **\<h2\> 标题**须与大纲中 enabled=true 的 sections **一一对应**，不得增删章节、不得调换顺序；每章内容按该 section 的 title 与 description 展开。
+
+## 用户意图（最高优先级，违反即不合格）
+若用户提供了**描述/主题**，则**整份报告**必须严格服从该意图：
+- **每一段、每一条指标、每一个图表、每一条洞察与建议**都必须与用户意图直接相关；与用户意图无关的段落、指标、图表、洞察、建议**一律不写、不展示**。
+- **严禁**：写入与用户描述主题无关的维度、指标、结论或建议。写每一段前自问：这一段是否直接回答或支撑用户关心的问题？若不是，则删除。
+
+## 输出格式（严格 JSON，不要输出其他内容）
+{
+  "summary": "一句话核心结论（30～60字），用于报告头部与 SEO",
+  "html": "<div>...</div>"
+}
+只输出一个 JSON 对象，**不要用 markdown 代码块（\`\`\`）包裹**，不要输出其他说明文字。
+
+## HTML 正文规则（全部内容由你生成，包括图表）
+- **时间范围前提**：若输入中提供了数据的时间范围（如「统计周期：…」「数据时间：…」），须在报告开头（摘要中或摘要后）及关键指标章节开头写明该统计周期，再展开具体指标；全文对指标的总结均须在此时间范围内表述。
+- **html** 为完整报告正文：**严格按大纲**中 enabled=true 的 sections 顺序组织，每章 \<h2\> 写大纲中该 section 的 title，每章内容按该 section 的 description 展开；风格专业、有深度。
+- **结构建议**：每个大章节用 \`<section>\` 包裹，章标题用 \`<h2>\`（内容须与大纲一致）、小节用 \`<h3>\`/\`<h4>\`；段落用 \`<p>\`，列表用 \`<ul>\`/\`<ol>\`/\`<li>\`。前端会自动应用标题层级、表格和图表样式。
+- **指标卡**：关键指标用 \`<div class="report-metric-cards">\` 包裹**最多 4 个** \`<div class="report-metric-card">\`，每卡内 \`<span class="report-metric-label">指标名</span>\`（勿带「万」等单位，如总播放量、分享次数）、\`<span class="report-metric-value">数值</span>\`（带单位）；若有增长率/变化率则放在**同一张卡**内：\`<span class="report-metric-change report-metric-change--up">↑ 41%</span>\` 或 \`<span class="report-metric-change report-metric-change--down">↓ 10%</span>\`，不要为「XX增长率」单独做一张卡。
+- **可交互图表**：用 \`<div class="report-echarts-chart" data-echarts-option='...'\`（单引号包 JSON）。支持：**折线图**（趋势，series type "line" + xAxis category）、**柱状图**（竖向，series type "bar" + xAxis category）、**条形图**（横向排名，series type "bar" + yAxis category + xAxis value）、**饼图**（占比，series type "pie" + data [{name,value}]，无需 xAxis/yAxis）。
+- **图表与数据展示**：静态数据用 \`<table>\`；动态图表用 data-echarts-option；可混合折线、柱状、条形、饼图使图表更丰富。
+- **若大纲中有「趋势分析」「图表」等章节，必须写出至少一个 report-echarts-chart**，不要只写文字。
+- 可使用的标签：div、section、h2、h3、h4、p、ul、ol、li、table、thead、tbody、tr、th、td、strong、em、span、br、hr、blockquote 等。
+- 不要输出 \`<html>\`、\`<body>\` 或 \`<script>\`，仅输出正文内容块。
+
+## 输出前自检（有用户描述时必做）
+- **是否严格按大纲**：正文章节顺序、每章 \<h2\> 标题是否与大纲 sections 一一对应？是否未增删、未调换章节？
+- **每一段、每一条指标、每一个图表、每一条洞察与建议**是否都与用户描述的主题直接相关？若有任一部分与用户意图无关，必须删除，不输出。`;
+
+/**
+ * 构建「报告正文为 HTML」的 user prompt（import 模式：大纲 + 统计 + 引用清单，图表由模型在 html 内用 data-chart-type + data-chart-data 写出，前端用 Recharts 渲染）
+ * @param idea 用户描述/意图，若有则报告中重点体现
+ */
+export function buildReportHtmlImportPrompt(
+  outlineJson: string,
+  analysisSummary: string,
+  citationList?: string[],
+  idea?: string
+): string {
+  const citationBlock =
+    citationList && citationList.length > 0
+      ? `## 【仅可引用的统计清单】
+${citationList.map((line) => `- ${line}`).join('\n')}\n---\n`
+      : '';
+  const hasCrossFile = citationList?.some((line) => line.includes('跨文件')) ?? false;
+  const crossFileHint = hasCrossFile
+    ? '\n**要求**：正文中必须至少包含 1 条跨文件/跨维度关联的洞察（如按歌手/厂牌统计的排名或集中度），不要只写单表趋势。\n\n'
+    : '';
+  const ideaTrim = idea?.trim();
+  const ideaBlock = ideaTrim
+    ? `\n**用户意图/关注点（硬性要求：每一段、每一条指标、每一个图表、每一条洞察与建议都必须与下述意图直接相关；与意图无关的段落、指标、图表、洞察、建议一律不写、不展示）**：\n${ideaTrim}\n\n`
+    : '';
+
+  return `## 报告大纲
+${outlineJson}
+${citationBlock}## 系统预计算的统计结果（供查阅，引用时须与「仅可引用的统计清单」一致）
+${analysisSummary}
+${crossFileHint}${ideaBlock}请**严格按上述报告大纲**生成报告正文 HTML：正文章节顺序、每章 \<h2\> 标题须与大纲中 enabled=true 的 sections 一一对应，不得增删或调换章节；每章内容按该 section 的 title 与 description 展开。再根据上述统计${ideaTrim ? '及用户意图' : ''}撰写具体内容（含摘要、指标、洞察、建议）。报告面向业务决策者，结论与建议需可执行、可落地。**时间范围前提**：若「仅可引用的统计清单」中有「本报告数据时间范围（统计周期）：…」，须在报告开头（摘要中或摘要后）及关键指标章节开头写明该统计周期，再展开具体指标；全文对指标的总结均须在此时间范围内表述。${ideaTrim ? '**硬性要求**：只输出与用户意图直接相关的内容；与意图无关的指标、图表、洞察、建议一律不写、不展示。' : ''} **关键指标**用 <div class="report-metric-cards"> 内最多 4 个 <div class="report-metric-card"><span class="report-metric-label">指标名（勿带「万」等单位，如写总播放量、分享次数）</span><span class="report-metric-value">数值（带单位）</span>（若有增长率则同卡内 <span class="report-metric-change report-metric-change--up">↑ 41%</span> 或 <span class="report-metric-change report-metric-change--down">↓ 10%</span>，勿单独做「XX增长率」卡）</div> 做指标卡展示。**可交互图表**用 <div class="report-echarts-chart" data-echarts-option='...'></div>（单引号包 ECharts option JSON），支持折线图、柱状图、条形图（横向排名）、饼图（占比），数据从上方统计整理，前端用 ECharts 渲染。输出 JSON：{ "summary": "...", "html": "<div>...</div>" }`;
+}
+
+/**
+ * 构建「报告正文为 HTML」的 user prompt（generate/paste 模式）
+ */
+export function buildReportHtmlGeneratePrompt(
+  mode: 'generate' | 'paste',
+  content: string,
+  outlineJson: string
+): string {
+  return `## 报告大纲
+${outlineJson}
+
+${mode === 'generate' ? `用户描述的主题：\n${content}` : `用户提供的内容：\n${content.slice(0, 5000)}${content.length > 5000 ? '\n...(内容已截断)' : ''}`}
+
+请**严格按上述报告大纲**生成报告正文 HTML：正文章节顺序、每章 \<h2\> 标题须与大纲 sections 一一对应，不得增删或调换章节；每章内容按该 section 的 title 与 description 展开。**硬性要求**：每一段、每一条指标、每一个图表、每一条洞察与建议都必须与用户描述的主题直接相关；与用户意图无关的段落、指标、图表、洞察、建议一律不写、不展示。输出 JSON：{ "summary": "...", "html": "<div>...</div>" }`;
+}
+
+/**
+ * 增强版大纲生成系统提示（BI 报告结构）
+ */
+export const ENHANCED_OUTLINE_SYSTEM_PROMPT = `你是 BI 报告结构策划师。系统已对用户的数据进行了预分析，你需要根据分析结果设计一份**面向业务决策者**的 BI 报告结构。
 
 请严格按照以下 JSON 格式输出（不要输出其他内容）：
 
@@ -406,16 +652,26 @@ export const ENHANCED_OUTLINE_SYSTEM_PROMPT = `你是一位专业的数据报告
       "id": "唯一ID",
       "type": "summary | metrics | chart | insight | recommendation",
       "title": "章节标题",
-      "description": "该章节将包含的内容简述（一句话）",
+      "description": "该章节将包含的内容简述；若有数据问询，须写具体（2～3 点：维度/指标/对比），便于正文写足",
       "enabled": true
     }
   ]
 }
 
+## 章节语义（BI 报告）
+- summary：核心结论 / 执行摘要（回答「数据问询」的一句话结论）
+- metrics：关键指标 / KPI（带单位，可带同比/环比）
+- chart：维度对比 / 趋势可视化（按维度、时间等）
+- insight：业务洞察（结论 + 依据 + 所以呢）
+- recommendation：行动建议（可执行、可落地）
+
 ## 规则
+- **数据问询优先**：若用户提供了**数据问询**（用户想通过本报告回答的问题），大纲中**只设计与该问询相关的章节**，章节标题与 description 须直接对应该问询；**不要加入与问询无关的章节或描述**。
+- **description 要具体**：每个 section 的 description 须写出本段将包含的**具体内容**（如：哪几个维度、哪几项指标、哪种对比），用 2～3 点表述，不要只写一句空泛概括；这样正文才能按大纲写足、内容充实。
+- **有数据问询时宁多勿少**：当用户提供了数据问询时，建议 **6～8 章、2～3 个图表章节**，避免报告只有 4～5 章、1 个图导致内容单薄。
 - **类型唯一**：summary、metrics、insight、recommendation 每种类型**只能出现一节**；chart（图表）可多节。不要输出多个「核心洞察」或多个「行动建议」
-- sections 数组：**根据数据特征自行决定**章节数（4-6 或 6-8）与图表章节数（1 个或 2-3 个）；数据简单时 4-6 章、1 个图表，信息量丰富（多文件、有关联、可展示图表多）时可 6-8 章、多个 chart 章节
-- type 必须是以下之一：summary（摘要）、metrics（关键指标）、chart（图表可视化）、insight（核心洞察）、recommendation（行动建议）
+- sections 数组：**根据数据特征自行决定**章节数（4-6 或 6-8）与图表章节数（1 个或 2-3 个）；数据简单时 4-6 章、1 个图表，信息量丰富（多文件、有关联、可展示图表多）或**有数据问询时**建议 6-8 章、2-3 个 chart 章节
+- type 必须是以下之一：summary、metrics、chart、insight、recommendation
 - 每个 section 的 id 应唯一，可用 section_1, section_2 等
 - enabled 默认为 true
 
@@ -429,18 +685,25 @@ export const ENHANCED_OUTLINE_SYSTEM_PROMPT = `你是一位专业的数据报告
 /**
  * 构建增强版大纲 Prompt（基于预计算统计）
  * @param richness 数据丰富度；当 isRich 为 true 时，提示 AI 设计 6-8 章并可包含多个图表章节
+ * @param idea 用户描述/意图，若有则重点考虑进大纲设计
  */
 export function buildEnhancedOutlinePrompt(
   analysisSummary: string,
   title?: string,
-  richness?: DataRichness
+  richness?: DataRichness,
+  idea?: string
 ): string {
   let prompt = `## 系统预分析结果
 
 ${analysisSummary}
 
-请根据以上数据分析结果，设计一份高质量的数据分析报告大纲。`;
+请根据以上数据分析结果，设计一份面向业务决策者的 BI 报告结构。`;
 
+  const ideaTrim = idea?.trim();
+  if (ideaTrim) {
+    prompt += `\n\n**数据问询（用户想通过本报告回答的问题；只设计与此问询相关的章节，章节标题与 description 须直接对应该问询，不要加入与问询无关的章节）**：\n${ideaTrim}`;
+    prompt += `\n\n**有数据问询时**：各章节的 description 需具体写出本段将包含的维度、指标或对比（2～3 点），以便报告内容充实；建议设计 6～8 章、2～3 个图表章节，避免内容单薄。`;
+  }
   if (richness?.hint) {
     prompt += `\n\n**数据说明（供参考，请根据数据复杂度自行决定章节数与图表数量）**：${richness.hint}`;
   }

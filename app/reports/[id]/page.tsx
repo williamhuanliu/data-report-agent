@@ -4,6 +4,7 @@ import { getReport } from "@/lib/storage";
 import { getThemeById, getThemeCSSVariables } from "@/lib/themes";
 import { ReportNav } from "@/app/components/report/ReportNav";
 import { ReportHeader } from "@/app/components/report/ReportHeader";
+import { ReportHtmlContent } from "@/app/components/report/ReportHtmlContent";
 import { MetricGrid } from "@/app/components/report/MetricCard";
 import {
   InsightSection,
@@ -25,7 +26,7 @@ export async function generateMetadata({
   if (!report) {
     return { title: "报告不存在" };
   }
-  const description = report.analysis.summary.slice(0, 160);
+  const description = (report.analysis?.summary ?? report.contentHtml?.slice(0, 160) ?? '').slice(0, 160);
   return {
     title: `${report.title} | AI 数据报告`,
     description,
@@ -68,11 +69,26 @@ export default async function ReportPage({
     >
       {showNav ? <ReportNav reportId={id} /> : null}
 
-      {/* 报告内容 - 打印时隐藏导航，保证背景白 */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 pb-20 print:py-0 print:bg-white print:text-black">
+      {/* 报告内容 */}
+      <main className="report-page max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-12 pb-28 print:py-0 print:bg-white print:text-black">
         <ReportHeader report={report} />
 
-        {report.outline?.sections ? (
+        {showNav && report.meta?.qualityWarnings?.length ? (
+          <div className="mt-4 text-sm text-zinc-500 dark:text-zinc-400 rounded-lg px-4 py-2.5 print:hidden bg-surface-elevated border border-border">
+            <span className="font-medium text-foreground">质量提示</span>
+            <span className="mx-2">—</span>
+            <span>建议人工复检</span>
+            <ul className="mt-1.5 ml-4 list-disc space-y-0.5">
+              {report.meta.qualityWarnings.map((w, i) => (
+                <li key={i}>{w}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        {report.contentHtml ? (
+          <ReportHtmlContent report={report} contentHtml={report.contentHtml} />
+        ) : report.outline?.sections ? (
           <ReportContentByOutline report={report} />
         ) : (
           <ReportContentDefault report={report} />
@@ -88,24 +104,8 @@ function MetricsBlock({ report }: { report: Report }) {
     <section className="mt-8" aria-labelledby="key-metrics-heading">
       <h2
         id="key-metrics-heading"
-        className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2"
+        className="text-xl font-semibold text-foreground mb-4"
       >
-        <span className="w-8 h-8 rounded-md bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-          <svg
-            className="w-4 h-4 text-amber-600 dark:text-amber-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-            />
-          </svg>
-        </span>
         关键指标
       </h2>
       <MetricGrid metrics={report.analysis.keyMetrics} />
@@ -161,11 +161,20 @@ function ReportContentByOutline({ report }: { report: Report }) {
           case "metrics":
             if (metricsRendered) {
               return (
-                <section key={key} className="mt-8" aria-labelledby={`outline-${section.id}`}>
-                  <h2 id={`outline-${section.id}`} className="text-xl font-semibold text-foreground mb-2">
+                <section
+                  key={key}
+                  className="mt-8"
+                  aria-labelledby={`outline-${section.id}`}
+                >
+                  <h2
+                    id={`outline-${section.id}`}
+                    className="text-xl font-semibold text-foreground mb-2"
+                  >
                     {section.title}
                   </h2>
-                  <p className="text-sm text-muted-foreground">见上方关键指标。</p>
+                  <p className="text-sm text-muted-foreground">
+                    见上方关键指标。
+                  </p>
                 </section>
               );
             }
@@ -182,11 +191,20 @@ function ReportContentByOutline({ report }: { report: Report }) {
           case "insight":
             if (insightRendered) {
               return (
-                <section key={key} className="mt-8" aria-labelledby={`outline-${section.id}`}>
-                  <h2 id={`outline-${section.id}`} className="text-xl font-semibold text-foreground mb-2">
+                <section
+                  key={key}
+                  className="mt-8"
+                  aria-labelledby={`outline-${section.id}`}
+                >
+                  <h2
+                    id={`outline-${section.id}`}
+                    className="text-xl font-semibold text-foreground mb-2"
+                  >
                     {section.title}
                   </h2>
-                  <p className="text-sm text-muted-foreground">见上方核心洞察。</p>
+                  <p className="text-sm text-muted-foreground">
+                    见上方核心洞察。
+                  </p>
                 </section>
               );
             }
@@ -197,11 +215,20 @@ function ReportContentByOutline({ report }: { report: Report }) {
           case "recommendation":
             if (recommendationRendered) {
               return (
-                <section key={key} className="mt-8" aria-labelledby={`outline-${section.id}`}>
-                  <h2 id={`outline-${section.id}`} className="text-xl font-semibold text-foreground mb-2">
+                <section
+                  key={key}
+                  className="mt-8"
+                  aria-labelledby={`outline-${section.id}`}
+                >
+                  <h2
+                    id={`outline-${section.id}`}
+                    className="text-xl font-semibold text-foreground mb-2"
+                  >
                     {section.title}
                   </h2>
-                  <p className="text-sm text-muted-foreground">见上方行动建议。</p>
+                  <p className="text-sm text-muted-foreground">
+                    见上方行动建议。
+                  </p>
                 </section>
               );
             }
@@ -215,7 +242,11 @@ function ReportContentByOutline({ report }: { report: Report }) {
           case "summary":
             if (index === 0 && firstSectionIsSummary) {
               return (
-                <section key={key} className="mt-8" aria-labelledby={`outline-${section.id}`}>
+                <section
+                  key={key}
+                  className="mt-8"
+                  aria-labelledby={`outline-${section.id}`}
+                >
                   <h2
                     id={`outline-${section.id}`}
                     className="text-xl font-semibold text-foreground mb-2"

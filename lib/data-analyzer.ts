@@ -1089,12 +1089,32 @@ export function analyzeData(
   };
 }
 
+/** 将日期字符串格式化为「YYYY年M月」用于报告中的时间范围表述 */
+function formatDateRangeLabel(isoDate: string): string {
+  const [y, m] = isoDate.split('-');
+  const month = m ? parseInt(m, 10) : 0;
+  return `${y}年${month}月`;
+}
+
 /**
  * 生成「仅可引用的统计清单」（供 prompt 前置使用）
  * 返回 12～22 条简短、可逐条引用的统计句，覆盖趋势、分布、集中度、排名、跨文件、规模/范围等多类信息
  */
 export function generateCitationList(analysis: DataAnalysis): string[] {
   const items: string[] = [];
+
+  // 全局数据时间范围（若有任一文件含日期列）：作为报告指标总结的前提，置于清单最前
+  let globalMin: string | null = null;
+  let globalMax: string | null = null;
+  for (const file of analysis.files) {
+    for (const stats of Object.values(file.dateStats)) {
+      if (!globalMin || stats.minDate < globalMin) globalMin = stats.minDate;
+      if (!globalMax || stats.maxDate > globalMax) globalMax = stats.maxDate;
+    }
+  }
+  if (globalMin && globalMax) {
+    items.push(`本报告数据时间范围（统计周期）：${formatDateRangeLabel(globalMin)}～${formatDateRangeLabel(globalMax)}。报告中所有对指标的总结、摘要、关键指标与洞察，均须在此时间范围内表述。`);
+  }
   
   for (const file of analysis.files) {
     const fileLabel = file.fileName ? file.fileName.replace(/\.(csv|xlsx?)$/i, '') : `文件${file.fileIndex + 1}`;

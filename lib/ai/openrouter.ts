@@ -15,7 +15,7 @@ import {
 // 延迟初始化，避免构建时报错
 let openrouter: OpenAI | null = null;
 
-function getOpenRouterClient(): OpenAI {
+export function getOpenRouterClient(): OpenAI {
   if (!openrouter) {
     openrouter = new OpenAI({
       apiKey: process.env.OPENROUTER_API_KEY,

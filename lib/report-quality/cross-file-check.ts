@@ -3,21 +3,21 @@
  * 当存在跨文件统计时，检查 insights 是否至少有一条与跨文件/按维度统计相关
  */
 
-import type { AnalysisResult, DataAnalysis } from '@/lib/types';
+import type { AnalysisResult, DataAnalysis } from "@/lib/types";
 
 /** 与跨文件洞察相关的关键词（任一出现即视为覆盖） */
 const CROSS_FILE_KEYWORDS = [
-  '跨文件',
-  '跨数据',
-  '按厂牌',
-  '按歌手',
-  '按艺人',
-  '厂牌',
-  '歌手',
-  '艺人',
-  '关联',
-  '多文件',
-  '多数据源',
+  "跨文件",
+  "跨数据",
+  "按厂牌",
+  "按歌手",
+  "按艺人",
+  "厂牌",
+  "歌手",
+  "艺人",
+  "关联",
+  "多文件",
+  "多数据源",
 ];
 
 function hasCrossFileKeyword(text: string): boolean {
@@ -48,7 +48,7 @@ export function checkCrossFileInsight(
   return {
     hasCrossFileInsight: false,
     warning:
-      '存在跨文件统计但报告中未发现跨文件/按维度类洞察，建议至少补充一条（如按厂牌/歌手统计的排名或集中度）',
+      "存在跨文件统计但报告中未发现跨文件/按维度类洞察，建议至少补充一条（如按厂牌/歌手统计的排名或集中度）",
   };
 }
 
@@ -61,6 +61,6 @@ export function logCrossFileWarning(
 ): void {
   const result = checkCrossFileInsight(analysis, dataAnalysis);
   if (!result.hasCrossFileInsight && result.warning) {
-    console.warn('[report-quality] cross-file-check:', result.warning);
+    console.warn("[report-quality] cross-file-check:", result.warning);
   }
 }

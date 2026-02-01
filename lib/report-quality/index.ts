@@ -44,5 +44,7 @@ export {
   checkHtmlQuality,
   checkNoRecordWordingInHtml,
   logHtmlQualityWarnings,
+  checkAnalysisQuality,
   type HtmlQualityResult,
+  type AnalysisQualityResult,
 } from "./html-quality-check";

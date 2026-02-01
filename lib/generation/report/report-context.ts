@@ -8,6 +8,8 @@ import {
   buildReportHtmlGeneratePrompt,
   REPORT_HTML_IMPORT_SYSTEM_PROMPT,
   buildReportHtmlImportPrompt,
+  STRUCTURED_REPORT_SYSTEM_PROMPT,
+  buildStructuredReportPrompt,
 } from '@/lib/ai/prompt';
 import { getAnalysisInput } from '@/lib/data-analyzer';
 import type { CreateMode, ParsedData, ReportOutline, DataAnalysis, ChartCandidate } from '@/lib/types';
@@ -83,4 +85,31 @@ export function buildReportContext(input: BuildReportContextInput): ReportContex
   }
 
   throw new Error('无效的创建模式');
+}
+
+/**
+ * 构建「结构化报告」Phase 1 的 LLM 上下文（import 模式）
+ * User 只带：大纲 + 仅可引用的统计清单 + 图表候选（不含完整 analysisSummary），减少 token 与规则遗忘
+ */
+export function buildStructuredReportContext(input: {
+  outline: ReportOutline;
+  citationList: string[];
+  suggestedCharts: ChartCandidate[];
+  idea?: string;
+}): { systemPrompt: string; userPrompt: string } {
+  const { outline, citationList, suggestedCharts, idea } = input;
+  const chartCandidatesJson = JSON.stringify(
+    suggestedCharts.map((c) => ({ id: c.id, title: c.title, chartType: c.chartType, description: c.description })),
+    null,
+    2
+  );
+  return {
+    systemPrompt: STRUCTURED_REPORT_SYSTEM_PROMPT,
+    userPrompt: buildStructuredReportPrompt(
+      JSON.stringify(outline, null, 2),
+      citationList,
+      chartCandidatesJson,
+      idea
+    ),
+  };
 }

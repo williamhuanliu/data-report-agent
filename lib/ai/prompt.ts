@@ -362,7 +362,11 @@ export function buildEnhancedReportPrompt(
       : richness?.maxCharts ?? 1;
 
   const multiChartInstruction = wantMultiple
-    ? `**图表选择**${preferredChartCount != null ? `（大纲中有 ${preferredChartCount} 个图表章节，请选满对应数量）` : '（本数据信息量丰富）'}：请从「推荐图表候选」中选择 **${chartCount} 个**图表，填写到 **selectedChartIds** 数组；不要填 selectedChartId。选择时按**适用场景**匹配：趋势类选 description 含「展示整体/各分类随时间趋势」的折线图，排名/对比类选含「排名/集中度对比」或「跨文件按维度统计」的柱状图，多图覆盖不同维度。`
+    ? `**图表选择**${
+        preferredChartCount != null
+          ? `（大纲中有 ${preferredChartCount} 个图表章节，请选满对应数量）`
+          : "（本数据信息量丰富）"
+      }：请从「推荐图表候选」中选择 **${chartCount} 个**图表，填写到 **selectedChartIds** 数组；不要填 selectedChartId。选择时按**适用场景**匹配：趋势类选 description 含「展示整体/各分类随时间趋势」的折线图，排名/对比类选含「排名/集中度对比」或「跨文件按维度统计」的柱状图，多图覆盖不同维度。`
     : `**图表选择**：从「推荐图表候选」中选择 **1 个**最能支撑核心观点的图表，填写其 id 到 **selectedChartId**。候选的 description 中说明了「适用场景」，请按章节意图匹配（趋势选折线、排名/对比选柱状），不要只看 title。`;
 
   const citationBlock =
@@ -518,8 +522,10 @@ export function buildContentPlanPrompt(
 ): string {
   const citationBlock =
     citationList.length > 0
-      ? `## 【仅可引用的统计清单】\n${citationList.map((line) => `- ${line}`).join('\n')}\n\n`
-      : '';
+      ? `## 【仅可引用的统计清单】\n${citationList
+          .map((line) => `- ${line}`)
+          .join("\n")}\n\n`
+      : "";
   return `**用户意图/关注点（只输出与下述意图直接相关的内容，无关的一律不选）**：
 ${userIdea.trim()}
 
@@ -547,8 +553,8 @@ export function buildReportHtmlFromPlanPrompt(
   const citationBlock =
     citationList.length > 0
       ? `## 【仅可引用的统计清单】
-${citationList.map((line) => `- ${line}`).join('\n')}\n\n`
-      : '';
+${citationList.map((line) => `- ${line}`).join("\n")}\n\n`
+      : "";
   return `## 内容计划（必须严格按此执行，不得添加计划外段落或图表）
 ${contentPlanText}
 
@@ -604,36 +610,49 @@ export function buildReportHtmlImportPrompt(
   const citationBlock =
     citationList && citationList.length > 0
       ? `## 【仅可引用的统计清单】
-${citationList.map((line) => `- ${line}`).join('\n')}\n---\n`
-      : '';
-  const hasCrossFile = citationList?.some((line) => line.includes('跨文件')) ?? false;
+${citationList.map((line) => `- ${line}`).join("\n")}\n---\n`
+      : "";
+  const hasCrossFile =
+    citationList?.some((line) => line.includes("跨文件")) ?? false;
   const crossFileHint = hasCrossFile
-    ? '\n**要求**：正文中必须至少包含 1 条跨文件/跨维度关联的洞察（如按歌手/厂牌统计的排名或集中度），不要只写单表趋势。\n\n'
-    : '';
+    ? "\n**要求**：正文中必须至少包含 1 条跨文件/跨维度关联的洞察（如按歌手/厂牌统计的排名或集中度），不要只写单表趋势。\n\n"
+    : "";
   const ideaTrim = idea?.trim();
   const ideaBlock = ideaTrim
     ? `\n**用户意图/关注点（硬性要求：每一段、每一条指标、每一个图表、每一条洞察与建议都必须与下述意图直接相关；与意图无关的段落、指标、图表、洞察、建议一律不写、不展示）**：\n${ideaTrim}\n\n`
-    : '';
+    : "";
 
   return `## 报告大纲
 ${outlineJson}
 ${citationBlock}## 系统预计算的统计结果（供查阅，引用时须与「仅可引用的统计清单」一致）
 ${analysisSummary}
-${crossFileHint}${ideaBlock}请**严格按上述报告大纲**生成报告正文 HTML：正文章节顺序、每章 \<h2\> 标题须与大纲中 enabled=true 的 sections 一一对应，不得增删或调换章节；每章内容按该 section 的 title 与 description 展开。再根据上述统计${ideaTrim ? '及用户意图' : ''}撰写具体内容（含摘要、指标、洞察、建议）。报告面向业务决策者，结论与建议需可执行、可落地。**时间范围前提**：若「仅可引用的统计清单」中有「本报告数据时间范围（统计周期）：…」，须在报告开头（摘要中或摘要后）及关键指标章节开头写明该统计周期，再展开具体指标；全文对指标的总结均须在此时间范围内表述。${ideaTrim ? '**硬性要求**：只输出与用户意图直接相关的内容；与意图无关的指标、图表、洞察、建议一律不写、不展示。' : ''} **关键指标**用 <div class="report-metric-cards"> 内最多 4 个 <div class="report-metric-card"><span class="report-metric-label">指标名（勿带「万」等单位，如写总播放量、分享次数）</span><span class="report-metric-value">数值（带单位）</span>（若有增长率则同卡内 <span class="report-metric-change report-metric-change--up">↑ 41%</span> 或 <span class="report-metric-change report-metric-change--down">↓ 10%</span>，勿单独做「XX增长率」卡）</div> 做指标卡展示。**可交互图表**用 <div class="report-echarts-chart" data-echarts-option='...'></div>（单引号包 ECharts option JSON），支持折线图、柱状图、条形图（横向排名）、饼图（占比），数据从上方统计整理，前端用 ECharts 渲染。输出 JSON：{ "summary": "...", "html": "<div>...</div>" }`;
+${crossFileHint}${ideaBlock}请**严格按上述报告大纲**生成报告正文 HTML：正文章节顺序、每章 \<h2\> 标题须与大纲中 enabled=true 的 sections 一一对应，不得增删或调换章节；每章内容按该 section 的 title 与 description 展开。再根据上述统计${
+    ideaTrim ? "及用户意图" : ""
+  }撰写具体内容（含摘要、指标、洞察、建议）。报告面向业务决策者，结论与建议需可执行、可落地。**时间范围前提**：若「仅可引用的统计清单」中有「本报告数据时间范围（统计周期）：…」，须在报告开头（摘要中或摘要后）及关键指标章节开头写明该统计周期，再展开具体指标；全文对指标的总结均须在此时间范围内表述。${
+    ideaTrim
+      ? "**硬性要求**：只输出与用户意图直接相关的内容；与意图无关的指标、图表、洞察、建议一律不写、不展示。"
+      : ""
+  } **关键指标**用 <div class="report-metric-cards"> 内最多 4 个 <div class="report-metric-card"><span class="report-metric-label">指标名（勿带「万」等单位，如写总播放量、分享次数）</span><span class="report-metric-value">数值（带单位）</span>（若有增长率则同卡内 <span class="report-metric-change report-metric-change--up">↑ 41%</span> 或 <span class="report-metric-change report-metric-change--down">↓ 10%</span>，勿单独做「XX增长率」卡）</div> 做指标卡展示。**可交互图表**用 <div class="report-echarts-chart" data-echarts-option='...'></div>（单引号包 ECharts option JSON），支持折线图、柱状图、条形图（横向排名）、饼图（占比），数据从上方统计整理，前端用 ECharts 渲染。输出 JSON：{ "summary": "...", "html": "<div>...</div>" }`;
 }
 
 /**
  * 构建「报告正文为 HTML」的 user prompt（generate/paste 模式）
  */
 export function buildReportHtmlGeneratePrompt(
-  mode: 'generate' | 'paste',
+  mode: "generate" | "paste",
   content: string,
   outlineJson: string
 ): string {
   return `## 报告大纲
 ${outlineJson}
 
-${mode === 'generate' ? `用户描述的主题：\n${content}` : `用户提供的内容：\n${content.slice(0, 5000)}${content.length > 5000 ? '\n...(内容已截断)' : ''}`}
+${
+  mode === "generate"
+    ? `用户描述的主题：\n${content}`
+    : `用户提供的内容：\n${content.slice(0, 5000)}${
+        content.length > 5000 ? "\n...(内容已截断)" : ""
+      }`
+}
 
 请**严格按上述报告大纲**生成报告正文 HTML：正文章节顺序、每章 \<h2\> 标题须与大纲 sections 一一对应，不得增删或调换章节；每章内容按该 section 的 title 与 description 展开。**硬性要求**：每一段、每一条指标、每一个图表、每一条洞察与建议都必须与用户描述的主题直接相关；与用户意图无关的段落、指标、图表、洞察、建议一律不写、不展示。输出 JSON：{ "summary": "...", "html": "<div>...</div>" }`;
 }
@@ -750,4 +769,54 @@ ${outlineJson}
 ${chartCandidatesJson}
 
 请输出 JSON：{ "selectedChartIds": ["可选图表中的 id"] }`;
+}
+
+// ============ 结构化报告（Phase 1：只出 JSON，服务端模板组 HTML） ============
+
+/** 结构化报告系统提示：只引用清单、无记录表述、洞察结论+实体、建议对应本数据、跨文件至少 1 条 */
+export const STRUCTURED_REPORT_SYSTEM_PROMPT = `你是资深数据分析师，向决策者汇报。只输出一个 JSON 对象，不要 markdown 代码块或其它文字。
+
+## 规则（违反即不合格）
+1. **只引用清单数字**：keyMetrics、insights 中每个数值/比例必须来自用户消息中的「【仅可引用的统计清单】」，单位与清单一致；大数写「XXX万」或「X.XX亿」，严禁「X.XX万」「万万」。
+2. **无记录表述**：某维度某时段无数据时写「XX在YY月后无记录」或「部分月份无数据」，严禁「降至0」「降幅-100%」「断崖式下跌」「下架」。
+3. **洞察**：先结论再数据再点名实体（歌名/人名/厂牌等），最后「所以呢」。错误示例：「头部集中度69.5%。」正确：「《告白气球》《晴天》《夜曲》三首占69.5%且均为周杰伦作品，说明杰威尔音乐流量高度依赖单一艺人。」
+4. **建议**：对应本数据具体发现（如哪家厂牌/哪类歌曲重点推），禁止空洞句如「打造爆款」「优化节奏」。
+5. **跨文件**：若清单中有「跨文件 - 按XX统计」，insights 至少 1 条来自跨文件（如按歌手/厂牌排名或集中度）。
+6. **图表**：selectedChartIds 只能从用户消息「推荐图表候选」的 id 中选，数量与大纲中 chart 章节数一致（趋势类选折线，排名/对比选柱状）。
+
+## 输出格式（严格 JSON）
+{
+  "summary": "一句话核心结论（30～60字），含规模或趋势+一条核心发现",
+  "keyMetrics": [{"label":"指标名","value":"数值（仅来自清单）","trend":"up|down|stable","changePercent":数字}],
+  "insights": ["洞察1：结论+数据+实体+所以呢","洞察2",...],
+  "recommendations": ["建议1：对应本数据","建议2",...],
+  "selectedChartIds": ["chart_1","chart_2"]
+}
+keyMetrics 最多 6 条，insights 3～5 条，recommendations 2～4 条。`;
+
+/**
+ * 构建结构化报告 user prompt：大纲 + 仅可引用的统计清单 + 推荐图表候选（不含完整 analysisSummary）
+ */
+export function buildStructuredReportPrompt(
+  outlineJson: string,
+  citationList: string[],
+  chartCandidatesJson: string,
+  idea?: string
+): string {
+  const citationBlock =
+    citationList.length > 0
+      ? `## 【仅可引用的统计清单】\n${citationList
+          .map((l) => `- ${l}`)
+          .join("\n")}\n\n`
+      : "";
+  const ideaBlock = idea?.trim()
+    ? `**用户意图（只输出与下述意图直接相关的内容）**：\n${idea.trim()}\n\n`
+    : "";
+  return `${ideaBlock}## 报告大纲
+${outlineJson}
+
+${citationBlock}## 推荐图表候选（selectedChartIds 必须从下列 id 中选）
+${chartCandidatesJson}
+
+请根据大纲与清单输出结构化报告 JSON。`;
 }

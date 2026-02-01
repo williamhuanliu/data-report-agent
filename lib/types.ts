@@ -85,6 +85,9 @@ export interface ReportMeta {
   qualityWarnings?: string[];
 }
 
+/** 服务端根据 selectedChartIds 从 suggestedCharts 生成的 ECharts option，按 id 索引供前端渲染 */
+export type ReportChartOptions = Record<string, unknown>;
+
 export interface Report {
   id: string;
   title: string;
@@ -104,6 +107,11 @@ export interface Report {
    * 若存在则前端直接渲染此 HTML（并在占位符处注入图表），不再按 outline + analysis 拆节渲染。
    */
   contentHtml?: string;
+  /**
+   * 服务端根据 selectedChartIds + suggestedCharts 生成的 ECharts option 列表。
+   * key 为 chart id（如 chart_1），value 为 ECharts option；前端用 data-chart-id 取 option 渲染。
+   */
+  chartOptions?: ReportChartOptions;
 }
 
 export interface ParsedData {

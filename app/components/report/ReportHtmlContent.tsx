@@ -39,8 +39,8 @@ const ALLOWED_TAGS = [
   "caption",
 ];
 
-/** 允许的属性：图表 div 的 data-echarts-option、class */
-const ADD_ATTR = ["data-echarts-option", "class"];
+/** 允许的属性：图表 div 的 data-echarts-option、data-chart-id、class */
+const ADD_ATTR = ["data-echarts-option", "data-chart-id", "class"];
 
 /** 报告图表主题：配色与基础样式 */
 const REPORT_CHART_THEME = {
@@ -577,7 +577,24 @@ function deepMerge(
 
 const THEME_NAME = "reportChartTheme";
 
-export function ReportHtmlContent({ contentHtml }: ReportHtmlContentProps) {
+function getChartOptionFromElement(
+  el: HTMLDivElement,
+  report: Report
+): Record<string, unknown> | null {
+  const chartId = el.getAttribute("data-chart-id");
+  if (chartId && report.chartOptions?.[chartId]) {
+    return report.chartOptions[chartId] as Record<string, unknown>;
+  }
+  const raw = el.getAttribute("data-echarts-option");
+  if (!raw?.trim()) return null;
+  try {
+    return JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+export function ReportHtmlContent({ report, contentHtml }: ReportHtmlContentProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartInstancesRef = useRef<echarts.ECharts[]>([]);
 
@@ -606,15 +623,14 @@ export function ReportHtmlContent({ contentHtml }: ReportHtmlContentProps) {
     });
 
     const chartEls = container.querySelectorAll<HTMLDivElement>(
-      "[data-echarts-option]"
+      "[data-chart-id], [data-echarts-option]"
     );
     const instances: echarts.ECharts[] = [];
 
     chartEls.forEach((el) => {
-      const raw = el.getAttribute("data-echarts-option");
-      if (!raw?.trim()) return;
+      const userOption = getChartOptionFromElement(el, report);
+      if (!userOption) return;
       try {
-        const userOption = JSON.parse(raw) as Record<string, unknown>;
         const series = userOption.series as
           | Array<{ type?: string }>
           | undefined;
@@ -657,7 +673,7 @@ export function ReportHtmlContent({ contentHtml }: ReportHtmlContentProps) {
       instances.forEach((chart) => chart.dispose());
       chartInstancesRef.current = [];
     };
-  }, [contentHtml]);
+  }, [contentHtml, report?.id]);
 
   return (
     <div

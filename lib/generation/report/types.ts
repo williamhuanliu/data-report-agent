@@ -2,7 +2,7 @@
  * 报告生成模块 - 请求与流式事件类型
  */
 
-import type { CreateMode, ParsedData, ReportOutline } from '@/lib/types';
+import type { CreateMode, ParsedData, ReportOutline } from "@/lib/types";
 
 /** 意图内容计划（两阶段生成：第一阶段 LLM 产出，第二阶段严格按此撰写） */
 export interface IntentContentPlan {
@@ -33,9 +33,9 @@ export interface ReportRequest {
 
 /** SSE 流事件：进度 / 完成 / 错误 */
 export type ReportStreamEvent =
-  | { type: 'progress'; section: string; progress: number }
-  | { type: 'complete'; reportId: string }
-  | { type: 'error'; message: string };
+  | { type: "progress"; section: string; progress: number }
+  | { type: "complete"; reportId: string }
+  | { type: "error"; message: string };
 
 export interface ReportGenerationOptions {
   onEvent?: (event: ReportStreamEvent) => void;

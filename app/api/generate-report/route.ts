@@ -1,6 +1,6 @@
-import { NextRequest } from 'next/server';
-import { runReportGeneration } from '@/lib/generation/report';
-import type { CreateMode, ParsedData, ReportOutline } from '@/lib/types';
+import { NextRequest } from "next/server";
+import { runReportGeneration } from "@/lib/generation/report";
+import type { CreateMode, ParsedData, ReportOutline } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
   const encoder = new TextEncoder();
@@ -59,9 +59,10 @@ export async function POST(request: NextRequest) {
 
         controller.close();
       } catch (error) {
-        console.error('生成报告失败:', error);
-        const message = error instanceof Error ? error.message : '生成报告时发生错误';
-        sendEvent({ type: 'error', message });
+        console.error("生成报告失败:", error);
+        const message =
+          error instanceof Error ? error.message : "生成报告时发生错误";
+        sendEvent({ type: "error", message });
         controller.close();
       }
     },
@@ -69,9 +70,9 @@ export async function POST(request: NextRequest) {
 
   return new Response(stream, {
     headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
     },
   });
 }

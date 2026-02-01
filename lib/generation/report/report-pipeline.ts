@@ -1,9 +1,10 @@
 /**
- * 报告生成 - 后处理管道（HTML 由大模型生成，图表在 html 内用 data-chart-type + data-chart-data，前端用 Recharts 渲染）
- * 解析 AI 返回的 { summary, html } → 产出 contentHtml + analysis（仅 summary）
+ * 报告生成 - 后处理管道
+ * 1. 结构化模式：解析 AI 返回的 { summary, keyMetrics, insights, recommendations, selectedChartIds } → 产出 analysis + selectedChartIds
+ * 2. HTML 模式（兼容）：解析 { summary, html } → 产出 contentHtml + analysis（仅 summary）
  */
 
-import type { AnalysisResult, ReportOutline } from '@/lib/types';
+import type { AnalysisResult, MetricItem, ReportOutline } from '@/lib/types';
 
 export interface RunPipelineInput {
   responseContent: string;
@@ -13,6 +14,17 @@ export interface RunPipelineInput {
 
 export type RunPipelineResult =
   | { success: true; contentHtml: string; analysis: AnalysisResult }
+  | { success: false; error: string };
+
+/** 结构化报告解析结果：analysis 写回 Report.analysis，selectedChartIds 用于服务端生成 chartOptions */
+export interface StructuredPipelineResult {
+  success: true;
+  analysis: AnalysisResult;
+  selectedChartIds: string[];
+}
+
+export type StructuredPipelineParseResult =
+  | StructuredPipelineResult
   | { success: false; error: string };
 
 function stripMarkdownCodeBlock(raw: string): string {
@@ -136,4 +148,68 @@ export async function runReportPipeline(input: RunPipelineInput): Promise<RunPip
   };
 
   return { success: true, contentHtml: payload.html, analysis };
+}
+
+// ============ 结构化报告解析（Phase 1 输出） ============
+
+function parseMetricItem(o: unknown): MetricItem | null {
+  if (!o || typeof o !== 'object') return null;
+  const m = o as Record<string, unknown>;
+  const label = typeof m.label === 'string' ? m.label : '';
+  const value = typeof m.value === 'string' ? m.value : String(m.value ?? '');
+  const trend = m.trend === 'up' || m.trend === 'down' || m.trend === 'stable' ? m.trend : 'stable';
+  const changePercent = typeof m.changePercent === 'number' ? m.changePercent : undefined;
+  if (!label || !value) return null;
+  return { label, value, trend, changePercent };
+}
+
+function parseStructuredPayload(raw: string): {
+  summary: string;
+  keyMetrics: AnalysisResult['keyMetrics'];
+  insights: string[];
+  recommendations: string[];
+  selectedChartIds: string[];
+} | null {
+  const stripped = stripMarkdownCodeBlock(raw);
+  const jsonStr = extractFirstJsonObject(stripped) ?? stripped.match(/\{[\s\S]*\}/)?.[0];
+  if (!jsonStr) return null;
+  try {
+    const obj = JSON.parse(jsonStr) as Record<string, unknown>;
+    const summary = typeof obj.summary === 'string' ? obj.summary : '';
+    const keyMetrics = Array.isArray(obj.keyMetrics)
+      ? (obj.keyMetrics as unknown[]).map(parseMetricItem).filter((m): m is MetricItem => m !== null)
+      : [];
+    const insights = Array.isArray(obj.insights)
+      ? (obj.insights as unknown[]).filter((i): i is string => typeof i === 'string')
+      : [];
+    const recommendations = Array.isArray(obj.recommendations)
+      ? (obj.recommendations as unknown[]).filter((r): r is string => typeof r === 'string')
+      : [];
+    const selectedChartIds = Array.isArray(obj.selectedChartIds)
+      ? (obj.selectedChartIds as unknown[]).filter((id): id is string => typeof id === 'string')
+      : [];
+    return { summary, keyMetrics, insights, recommendations, selectedChartIds };
+  } catch {
+    return null;
+  }
+}
+
+export function runStructuredPipeline(responseContent: string): StructuredPipelineParseResult {
+  const payload = parseStructuredPayload(responseContent);
+  if (!payload) {
+    const snippet = responseContent.trim().slice(0, 300);
+    console.warn('[report-pipeline] 无法解析结构化报告 JSON，响应片段:', snippet);
+    return { success: false, error: '无法从响应中提取结构化报告 JSON' };
+  }
+  const analysis: AnalysisResult = {
+    summary: payload.summary || '报告已生成',
+    keyMetrics: payload.keyMetrics,
+    insights: payload.insights,
+    recommendations: payload.recommendations,
+  };
+  return {
+    success: true,
+    analysis,
+    selectedChartIds: payload.selectedChartIds,
+  };
 }

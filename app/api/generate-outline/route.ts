@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { OUTLINE_SYSTEM_PROMPT, buildOutlinePrompt } from '@/lib/ai/prompt';
+import {
+  OUTLINE_SYSTEM_PROMPT,
+  buildOutlinePrompt,
+  ENHANCED_OUTLINE_SYSTEM_PROMPT,
+  buildEnhancedOutlinePrompt,
+} from '@/lib/ai/prompt';
 import { getDefaultOpenRouterModel } from '@/lib/ai/openrouter';
-import { dataToCSVString, getDataSummary } from '@/lib/excel-parser';
+import { analyzeData, generateAnalysisSummary, getDataRichness } from '@/lib/data-analyzer';
 import type { CreateMode, ParsedData, ReportOutline } from '@/lib/types';
 
 let openrouter: OpenAI | null = null;
@@ -24,43 +29,59 @@ function getOpenRouterClient(): OpenAI {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { mode, idea, pastedContent, data, title } = body as {
+    const { mode, idea, pastedContent, data, dataList, title, model, fileNames } = body as {
       mode: CreateMode;
       idea?: string;
       pastedContent?: string;
       data?: ParsedData;
+      dataList?: ParsedData[];
       title?: string;
+      model?: string;
+      fileNames?: string[];
     };
+    const chatModel = model || getDefaultOpenRouterModel();
 
-    let content = '';
+    let userPrompt = '';
+    let systemPrompt = '';
 
     if (mode === 'generate') {
       if (!idea?.trim()) {
         return NextResponse.json({ error: '请输入报告主题' }, { status: 400 });
       }
-      content = idea.trim();
+      userPrompt = buildOutlinePrompt(mode, idea.trim(), title);
+      systemPrompt = OUTLINE_SYSTEM_PROMPT;
+
     } else if (mode === 'paste') {
       if (!pastedContent?.trim()) {
         return NextResponse.json({ error: '请粘贴内容' }, { status: 400 });
       }
-      content = pastedContent.trim();
+      userPrompt = buildOutlinePrompt(mode, pastedContent.trim(), title);
+      systemPrompt = OUTLINE_SYSTEM_PROMPT;
+
     } else if (mode === 'import') {
-      if (!data || !data.rows || data.rows.length === 0) {
+      const list = dataList && dataList.length > 0 ? dataList : (data ? [data] : []);
+      if (list.length === 0 || list.every((d) => !d?.rows?.length)) {
         return NextResponse.json({ error: '请上传数据文件' }, { status: 400 });
       }
-      const csvString = dataToCSVString(data.rows);
-      const summary = getDataSummary(data);
-      content = `${summary}\n\n数据样本（前10行）：\n${csvString.split('\n').slice(0, 11).join('\n')}`;
+
+      // === 核心改进：使用数据分析引擎生成增强摘要 ===
+      const names = fileNames || list.map((_, i) => `文件${i + 1}`);
+      const analysis = analyzeData(list, names);
+      const analysisSummary = generateAnalysisSummary(analysis);
+      const richness = getDataRichness(analysis);
+
+      // 使用增强版 Prompt（传入丰富度以支持多章节、多图表章节）
+      userPrompt = buildEnhancedOutlinePrompt(analysisSummary, title, richness);
+      systemPrompt = ENHANCED_OUTLINE_SYSTEM_PROMPT;
+
     } else {
       return NextResponse.json({ error: '无效的创建模式' }, { status: 400 });
     }
 
-    const userPrompt = buildOutlinePrompt(mode, content, title);
-
     const response = await getOpenRouterClient().chat.completions.create({
-      model: getDefaultOpenRouterModel(),
+      model: chatModel,
       messages: [
-        { role: 'system', content: OUTLINE_SYSTEM_PROMPT },
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
       temperature: 0.3,

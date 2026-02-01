@@ -5,10 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "../components/ThemeProvider";
-import { Alert } from "../components/ui";
+import { Alert, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../components/ui";
 import { OutlineEditor } from "../create/components/OutlineEditor";
 import { ThemeSelector } from "../create/components/ThemeSelector";
+import { ModelSelector } from "../create/components/ModelSelector";
 import { GenerationProgress } from "../create/components/GenerationProgress";
+import { OPENROUTER_MODELS } from "@/lib/ai/openrouter";
 import type {
   Report,
   CreateMode,
@@ -75,15 +77,22 @@ export default function DashboardPage() {
   const menuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  // Create wizard state
+  // Create wizard state（支持多文件上传）
   const [mode, setMode] = useState<CreateMode | null>(null);
   const [step, setStep] = useState<CreateStep>("mode");
   const [idea, setIdea] = useState("");
   const [pastedContent, setPastedContent] = useState("");
-  const [parsedData, setParsedData] = useState<ParsedData | null>(null);
-  const [fileName, setFileName] = useState("");
+  const [uploadedFiles, setUploadedFiles] = useState<
+    { id: string; fileName: string; parsedData: ParsedData }[]
+  >([]);
   const [outline, setOutline] = useState<ReportOutline | null>(null);
   const [theme, setTheme] = useState("business");
+  const defaultModelId = OPENROUTER_MODELS[0]?.id ?? "google/gemini-2.0-flash-001";
+  const [selectedModel, setSelectedModel] = useState<string>(defaultModelId);
+  const handleModelChange = useCallback((v: string) => {
+    setSelectedModel(v);
+    if (typeof localStorage !== "undefined") localStorage.setItem("data-report-model", v);
+  }, []);
   const [title, setTitle] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -110,6 +119,14 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchReports();
+  }, []);
+
+  // 恢复用户上次选择的大模型
+  useEffect(() => {
+    const stored = localStorage.getItem("data-report-model");
+    if (stored && OPENROUTER_MODELS.some((m) => m.id === stored)) {
+      setSelectedModel(stored);
+    }
   }, []);
 
   useEffect(() => {
@@ -178,9 +195,13 @@ export default function DashboardPage() {
     // 单页创建：不再切换步骤，保留以兼容后续 outline/theme/generating
   };
 
-  // 从单页「生成」直接提交：上传文件为必选，走 import 模式
+  const removeFile = useCallback((id: string) => {
+    setUploadedFiles((prev) => prev.filter((f) => f.id !== id));
+  }, []);
+
+  // 从单页「生成」直接提交：支持多文件，综合分析
   const handleStartFromCreatePage = async () => {
-    if (!parsedData) return;
+    if (uploadedFiles.length === 0) return;
     setError(null);
     setIsLoading(true);
     setMode("import");
@@ -191,8 +212,9 @@ export default function DashboardPage() {
         body: JSON.stringify({
           mode: "import",
           idea: idea.trim() || undefined,
-          data: parsedData,
+          dataList: uploadedFiles.map((f) => f.parsedData),
           title: title.trim() || undefined,
+          model: selectedModel,
         }),
       });
       const result = await response.json();
@@ -217,22 +239,28 @@ export default function DashboardPage() {
 
     setIsLoading(true);
     try {
-      const data = await parseExcelFile(file);
-      if (data.rows.length === 0) {
+      const parsedData = await parseExcelFile(file);
+      if (parsedData.rows.length === 0) {
         setError("文件中没有数据");
         setIsLoading(false);
         return;
       }
-      setParsedData(data);
-      const baseName = file.name.replace(/\.(xlsx?|csv)$/i, "");
-      setTitle(`数据报告 - ${baseName}`);
-      setFileName(file.name);
+      const id = crypto.randomUUID();
+      const isFirst = uploadedFiles.length === 0;
+      setUploadedFiles((prev) => [
+        ...prev,
+        { id, fileName: file.name, parsedData },
+      ]);
+      if (isFirst) {
+        const baseName = file.name.replace(/\.(xlsx?|csv)$/i, "");
+        setTitle(`数据报告 - ${baseName}`);
+      }
     } catch (err) {
       setError(getFriendlyErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [uploadedFiles, selectedModel]);
 
   const handleGenerateReport = async () => {
     if (!outline) return;
@@ -249,10 +277,11 @@ export default function DashboardPage() {
           mode,
           idea: mode === "generate" ? idea : undefined,
           pastedContent: mode === "paste" ? pastedContent : undefined,
-          data: mode === "import" ? parsedData : undefined,
+          dataList: mode === "import" && uploadedFiles.length > 0 ? uploadedFiles.map((f) => f.parsedData) : undefined,
           outline,
           theme,
           title,
+          model: selectedModel,
         }),
       });
 
@@ -317,8 +346,7 @@ export default function DashboardPage() {
     setStep("mode");
     setIdea("");
     setPastedContent("");
-    setParsedData(null);
-    setFileName("");
+    setUploadedFiles([]);
     setOutline(null);
     setTheme("business");
     setTitle("");
@@ -796,42 +824,50 @@ export default function DashboardPage() {
                   {/* 主输入区域 - 类似 Gemini 的输入框 */}
                   <div className="w-full max-w-2xl">
                     <div className="rounded-3xl bg-white dark:bg-[#1e1f20] shadow-sm border border-[#dfe1e5] dark:border-[#3c4043] overflow-hidden">
-                      {/* 文件上传/显示区 */}
-                      {parsedData ? (
-                        <div className="px-5 py-4 border-b border-[#f1f3f4] dark:border-[#3c4043] flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-[#e6f4ea] dark:bg-[#1e3a29] flex items-center justify-center">
-                            <svg
-                              className="w-5 h-5 text-[#34a853]"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                              strokeWidth={2}
+                      {/* 已上传文件列表（支持多文件） */}
+                      {uploadedFiles.length > 0 ? (
+                        <div className="px-5 py-4 border-b border-[#f1f3f4] dark:border-[#3c4043] space-y-2 max-h-40 overflow-y-auto">
+                          {uploadedFiles.map((f) => (
+                            <div
+                              key={f.id}
+                              className="flex items-center gap-3 py-1.5"
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                              />
-                            </svg>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-[#1f1f1f] dark:text-[#e3e3e3] truncate">
-                              {fileName}
-                            </p>
-                            <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6]">
-                              {parsedData.rows.length} 行数据
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setParsedData(null);
-                              setFileName("");
-                            }}
-                            className="text-xs text-[#5f6368] hover:text-[#1f1f1f] dark:hover:text-[#e3e3e3]"
-                          >
-                            移除
-                          </button>
+                              <div className="w-10 h-10 shrink-0 rounded-xl bg-[#e6f4ea] dark:bg-[#1e3a29] flex items-center justify-center">
+                                <svg
+                                  className="w-5 h-5 text-[#34a853]"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                  strokeWidth={2}
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                  />
+                                </svg>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-[#1f1f1f] dark:text-[#e3e3e3] truncate">
+                                  {f.fileName}
+                                </p>
+                                <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6]">
+                                  {f.parsedData.rows.length} 行数据
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removeFile(f.id)}
+                                className="shrink-0 text-xs text-[#5f6368] hover:text-[#1f1f1f] dark:hover:text-[#e3e3e3] px-2 py-1 rounded hover:bg-[#f1f3f4] dark:hover:bg-[#3c4043]"
+                                aria-label={`移除 ${f.fileName}`}
+                              >
+                                移除
+                              </button>
+                            </div>
+                          ))}
+                          <p className="text-xs text-[#5f6368] dark:text-[#9aa0a6] pt-1">
+                            共 {uploadedFiles.length} 个文件，将综合分析生成报告
+                          </p>
                         </div>
                       ) : null}
 
@@ -844,17 +880,61 @@ export default function DashboardPage() {
                         className="w-full px-5 py-4 bg-transparent text-base text-[#1f1f1f] dark:text-[#e3e3e3] placeholder:text-[#9aa0a6] focus:outline-none resize-none"
                       />
 
-                      {/* 底部操作栏 */}
-                      <div className="px-4 py-3 flex items-center justify-between border-t border-[#f1f3f4] dark:border-[#3c4043]">
-                        <div className="flex items-center gap-1">
-                          {/* 上传按钮 */}
-                          <label className="relative w-10 h-10 rounded-full flex items-center justify-center text-[#5f6368] dark:text-[#9aa0a6] hover:bg-[#f1f3f4] dark:hover:bg-[#37393b] cursor-pointer transition-colors">
+                      {/* 底部操作栏：上传 + 大模型选择 + 发送 */}
+                      <div className="px-4 py-3 flex items-center justify-between gap-3 border-t border-[#f1f3f4] dark:border-[#3c4043]">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          {/* 上传按钮：用 relative 限制 file input 仅覆盖按钮，避免误触 */}
+                          <label className="relative shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-[#5f6368] dark:text-[#9aa0a6] hover:bg-[#f1f3f4] dark:hover:bg-[#37393b] cursor-pointer transition-colors">
                             <input
                               type="file"
                               accept=".xlsx,.xls,.csv"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) handleFileSelect(file);
+                              multiple
+                              onChange={async (e) => {
+                                const files = e.target.files;
+                                if (!files?.length) {
+                                  e.target.value = "";
+                                  return;
+                                }
+                                if (files.length === 1) {
+                                  await handleFileSelect(files[0]);
+                                  e.target.value = "";
+                                  return;
+                                }
+                                setError(null);
+                                setIsLoading(true);
+                                const toAdd: { id: string; fileName: string; parsedData: ParsedData }[] = [];
+                                try {
+                                  for (let i = 0; i < files.length; i++) {
+                                    const file = files[i];
+                                    const sizeCheck = validateFileSize(file.size);
+                                    if (!sizeCheck.ok) {
+                                      setError(sizeCheck.message ?? "文件过大");
+                                      break;
+                                    }
+                                    const parsedData = await parseExcelFile(file);
+                                    if (parsedData.rows.length === 0) {
+                                      setError("文件中没有数据");
+                                      break;
+                                    }
+                                    toAdd.push({
+                                      id: crypto.randomUUID(),
+                                      fileName: file.name,
+                                      parsedData,
+                                    });
+                                  }
+                                  if (toAdd.length > 0) {
+                                    const wasEmpty = uploadedFiles.length === 0;
+                                    setUploadedFiles((prev) => [...prev, ...toAdd]);
+                                    if (wasEmpty) {
+                                      const baseName = toAdd[0].fileName.replace(/\.(xlsx?|csv)$/i, "");
+                                      setTitle(`数据报告 - ${baseName}`);
+                                    }
+                                  }
+                                } catch (err) {
+                                  setError(getFriendlyErrorMessage(err));
+                                } finally {
+                                  setIsLoading(false);
+                                }
                                 e.target.value = "";
                               }}
                               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -873,13 +953,28 @@ export default function DashboardPage() {
                               />
                             </svg>
                           </label>
+                          {/* 大模型选择（shadcn Select，避免与上传按钮误触） */}
+                          <div className="min-w-0 max-w-[200px] shrink-0">
+                            <Select value={selectedModel} onValueChange={handleModelChange}>
+                              <SelectTrigger className="h-10 rounded-full border-[#e5e7eb] dark:border-[#3c4043] bg-[#f1f3f4] dark:bg-[#2d2e2f] text-sm">
+                                <SelectValue placeholder="选择大模型" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {OPENROUTER_MODELS.map((m) => (
+                                  <SelectItem key={m.id} value={m.id}>
+                                    {m.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
 
                         {/* 发送按钮 */}
                         <button
                           type="button"
                           onClick={handleStartFromCreatePage}
-                          disabled={!parsedData || isLoading}
+                          disabled={uploadedFiles.length === 0 || isLoading}
                           className="w-10 h-10 rounded-full flex items-center justify-center bg-[#1f1f1f] dark:bg-[#e3e3e3] text-white dark:text-[#1f1f1f] disabled:bg-[#e8eaed] dark:disabled:bg-[#3c4043] disabled:text-[#9aa0a6] disabled:cursor-not-allowed transition-colors"
                         >
                           {isLoading ? (
@@ -905,7 +1000,7 @@ export default function DashboardPage() {
 
                     {/* 提示文案 */}
                     <p className="text-center text-xs text-[#9aa0a6] mt-4">
-                      上传 Excel 或 CSV 文件，AI 将自动分析并生成报告
+                      支持上传多个 Excel 或 CSV 文件，AI 将综合分析并生成报告
                     </p>
                   </div>
                 </div>
@@ -923,10 +1018,15 @@ export default function DashboardPage() {
                     isLoading={isLoading}
                     hideActions
                   />
-                  <div className="mt-10">
+                  <div className="mt-10 space-y-6">
                     <ThemeSelector
                       selectedTheme={theme}
                       onThemeChange={setTheme}
+                      inline
+                    />
+                    <ModelSelector
+                      selectedModel={selectedModel}
+                      onModelChange={handleModelChange}
                       inline
                     />
                   </div>

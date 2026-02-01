@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog } from "@/app/components/ui/Dialog";
 import { Button } from "@/app/components/ui/Button";
 import { getFriendlyErrorMessage } from "@/lib/error-messages";
+import { OPENROUTER_MODELS } from "@/lib/ai/openrouter";
 
 type SectionType =
   | "summary"
@@ -19,6 +20,8 @@ interface SectionEditDialogProps {
   currentContent: unknown;
   reportId: string;
   onUpdate: (newContent: unknown) => void;
+  /** 报告创建时使用的大模型，作为编辑默认选项 */
+  reportModel?: string;
 }
 
 const SECTION_LABELS: Record<SectionType, string> = {
@@ -40,6 +43,8 @@ const QUICK_ACTIONS = [
   { id: "formal", label: "更正式", description: "调整为更正式的商务语气" },
 ];
 
+const defaultModelId = OPENROUTER_MODELS[0]?.id ?? "google/gemini-2.0-flash-001";
+
 export function SectionEditDialog({
   open,
   onClose,
@@ -47,11 +52,17 @@ export function SectionEditDialog({
   currentContent,
   reportId,
   onUpdate,
+  reportModel,
 }: SectionEditDialogProps) {
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [customInstruction, setCustomInstruction] = useState("");
+  const [selectedModel, setSelectedModel] = useState(reportModel || defaultModelId);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (open) setSelectedModel(reportModel || defaultModelId);
+  }, [open, reportModel]);
 
   const handleSubmit = async () => {
     const instruction = selectedAction || customInstruction.trim();
@@ -72,6 +83,7 @@ export function SectionEditDialog({
           sectionType,
           currentContent,
           instruction: selectedAction || customInstruction,
+          model: selectedModel,
         }),
       });
 
@@ -175,6 +187,25 @@ export function SectionEditDialog({
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Model selector */}
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-2">
+            大模型
+          </label>
+          <select
+            value={selectedModel}
+            onChange={(e) => setSelectedModel(e.target.value)}
+            className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-border-focus"
+            aria-label="选择大模型"
+          >
+            {OPENROUTER_MODELS.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Custom instruction */}

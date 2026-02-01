@@ -12,11 +12,13 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import type { ChartDataItem } from "@/lib/types";
+import type { ChartDataItem, ChartType } from "@/lib/types";
 
 interface ChartSectionProps {
   data: ChartDataItem[];
   title?: string;
+  /** AI 建议的图表类型；未传时按数据量推断：>5 用折线图，否则柱状图 */
+  chartType?: ChartType;
 }
 
 const COLORS = [
@@ -28,7 +30,7 @@ const COLORS = [
   "#ec4899", // pink
 ];
 
-export function ChartSection({ data, title = "趋势图表" }: ChartSectionProps) {
+export function ChartSection({ data, title = "趋势图表", chartType }: ChartSectionProps) {
   if (!data || data.length === 0) return null;
 
   // 获取除 name 之外的所有数值字段
@@ -38,8 +40,9 @@ export function ChartSection({ data, title = "趋势图表" }: ChartSectionProps
 
   if (dataKeys.length === 0) return null;
 
-  // 判断使用折线图还是柱状图
-  const useLineChart = data.length > 5;
+  // 优先使用 AI 建议的 chartType，否则按数据量推断：时间序列/多点用折线，类别对比用柱状
+  const useLineChart =
+    chartType === "line" || (chartType !== "bar" && data.length > 5);
 
   return (
     <section className="mt-8">

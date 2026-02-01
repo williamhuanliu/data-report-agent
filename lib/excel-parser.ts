@@ -14,6 +14,36 @@ function isCSVFile(file: File): boolean {
 }
 
 /**
+ * 从 CSV 字符串解析为 ParsedData（Node 或浏览器均可使用，用于测试或服务端）
+ */
+export function parseCSVString(csvText: string): ParsedData {
+  const workbook = XLSX.read(csvText, {
+    type: 'string',
+    codepage: 65001, // UTF-8
+  });
+  return workbookToParsedData(workbook);
+}
+
+/**
+ * 将 XLSX Workbook 转为 ParsedData（内部复用）
+ */
+function workbookToParsedData(workbook: XLSX.WorkBook): ParsedData {
+  const sheetName = workbook.SheetNames[0];
+  const worksheet = workbook.Sheets[sheetName];
+  const jsonData = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet, {
+    defval: null,
+    raw: false,
+  });
+  if (jsonData.length === 0) {
+    return { headers: [], rows: [], columnTypes: {} };
+  }
+  const headers = Object.keys(jsonData[0]);
+  const columnTypes = detectColumnTypes(jsonData, headers);
+  const rows = jsonData.map(row => convertRowTypes(row, columnTypes));
+  return { headers, rows, columnTypes };
+}
+
+/**
  * 解析 Excel 或 CSV 文件
  * CSV 使用 UTF-8 解码，确保中文表头正确显示
  */
@@ -21,41 +51,14 @@ export async function parseExcelFile(file: File): Promise<ParsedData> {
   let workbook: XLSX.WorkBook;
 
   if (isCSVFile(file)) {
-    // CSV：用 text() 按 UTF-8 解码，保证中文不乱码
     const text = await file.text();
-    workbook = XLSX.read(text, {
-      type: 'string',
-      codepage: 65001, // UTF-8
-    });
+    workbook = XLSX.read(text, { type: 'string', codepage: 65001 });
   } else {
     const arrayBuffer = await file.arrayBuffer();
     workbook = XLSX.read(arrayBuffer, { type: 'array' });
   }
 
-  // 获取第一个工作表
-  const sheetName = workbook.SheetNames[0];
-  const worksheet = workbook.Sheets[sheetName];
-  
-  // 转换为 JSON
-  const jsonData = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet, {
-    defval: null,
-    raw: false,
-  });
-  
-  if (jsonData.length === 0) {
-    return { headers: [], rows: [], columnTypes: {} };
-  }
-  
-  // 提取表头
-  const headers = Object.keys(jsonData[0]);
-  
-  // 检测列类型
-  const columnTypes = detectColumnTypes(jsonData, headers);
-  
-  // 转换数据类型
-  const rows = jsonData.map(row => convertRowTypes(row, columnTypes));
-  
-  return { headers, rows, columnTypes };
+  return workbookToParsedData(workbook);
 }
 
 /**

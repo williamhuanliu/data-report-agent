@@ -272,6 +272,7 @@ export default function ReportEditPage() {
           }
           reportId={reportId}
           onUpdate={(newContent) => handleSectionUpdate(editingSection, newContent)}
+          reportModel={report.openrouterModel}
         />
       )}
     </div>

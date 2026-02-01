@@ -36,12 +36,14 @@ const EDIT_SYSTEM_PROMPT = `你是一位专业的数据报告编辑。根据用�
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { sectionType, currentContent, instruction } = body as {
+    const { sectionType, currentContent, instruction, model } = body as {
       reportId: string;
       sectionType: string;
       currentContent: unknown;
       instruction: string;
+      model?: string;
     };
+    const chatModel = model || getDefaultOpenRouterModel();
 
     if (!sectionType || currentContent === undefined || !instruction) {
       return NextResponse.json({ error: '缺少必要参数' }, { status: 400 });
@@ -73,7 +75,7 @@ ${contentStr}
 ${responseFormat}`;
 
     const response = await getOpenRouterClient().chat.completions.create({
-      model: getDefaultOpenRouterModel(),
+      model: chatModel,
       messages: [
         { role: 'system', content: EDIT_SYSTEM_PROMPT },
         { role: 'user', content: userPrompt },
